@@ -1,0 +1,23 @@
+{
+  "SKILL.md": "f6073ffe64787a9fa97ad2996881299f589ab6cb86a1dbfd67880e6e39e3447f",
+  "agents/openai.yaml": "22541efb935808b44824680b8b21f83ad78bb2823993389177098b25c6a4cb20",
+  "assets/开发交接模板.md": "b5db2350e9f85474002e71e41b45c734d235fa799bfabb8426f7bfb2abb2e534",
+  "assets/自动检查配置示例.json": "03fddda801ebc8d161f93fbb97b227c8f6987e620ab2e95105a5308a9f93b465",
+  "references/agents/勘察.md": "46801c03448300cfde0811a0b482188b6905c6323f9987c8d0f151796efc86ad",
+  "references/agents/实现.md": "d1b5bc584147c7660e7715454c110155af32cdda7c779933584b632fcf1a5dcd",
+  "references/agents/独立验证.md": "ebe1b9aabd3214b81e426f6e0682421da2f1496ff2bf21c00eee68aedffdbfe9",
+  "references/shared/execution-contract.md": "721385b60b010c12a7026701a75606845063f1f027130df417f2bcb50802b7af",
+  "references/shared/input-and-evidence.md": "12f6a9911a8c406def740c5d3a2e236e8731a00ea6e650a60d47e6eca643d146",
+  "references/shared/project-context.md": "438c1191853dfc9723cad0ea1e0d2e6fdd8584abc984e9e9cadfc4b58ceebd83",
+  "references/shared/子代理协作.md": "fa4ce8c0599bfd024514939ab22e3af7afbbddd580a5d035aeb9255cef8da1fb",
+  "references/shared/并发工作区.md": "79b2d41b22ae7d69b813468c2214ff3a3ae4a1f05dde7d6d234958e60ad5a678",
+  "references/workflows/architecture.md": "e61ad969174b5598181126d70af0d81bcfccb96651009d9a456650047a5a0b78",
+  "references/workflows/reuse.md": "b8c45b96b70079b4450eddea26772393693f5ec7e8f6754c81bd7e0a6ac5c659",
+  "references/workflows/tdd.md": "0771af454658c8c4ff1685703db8b8c303c15aab989cadcd5f2f859122db8f81",
+  "references/workflows/verification.md": "56151c199fb7fd3ae127a174f101897bb27a0b6aeab8a5d498d5866a756e0383",
+  "references/workflows/代码审查.md": "43ea3bea31aca8421e25f3cd2193c172254274cd3071205fde73a9d34e9b6d05",
+  "references/workflows/回合并.md": "b50d3c5c13120e6a42684a0b3f101c0959edb4dd6c3c649c688b870a283f87d1",
+  "references/workflows/自动检查.md": "fcdbbf021d5d6c22cba57cb498ba06d6ff34510c1ee73f8d277426b744c9cd3c",
+  "scripts/check_links.py": "fc5d05e36817131ec82b3d7d6f7d42054ae65a70338c8abe65226bb19aa58170",
+  "scripts/run_review_checks.py": "13ef8406dcbd2f072059a5767a10454fafb3f77532a2b534202422427528c775"
+}

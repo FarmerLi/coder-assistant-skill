@@ -1,0 +1,424 @@
+--- a/SKILL.md
++++ b/SKILL.md
+@@ -34,6 +34,8 @@
+ 
+ 支持不同会话同时修改同一仓库。Git 项目的每个写入会话开始前必须按[并发工作区](references/shared/并发工作区.md)绑定本会话专属 worktree，已有专属 worktree 直接复用。会话内主 agent 与子 agent 共用该 worktree，按文件归属协调，不为每个子 agent 另建 worktree。服务环境按实际冲突和验证需要使用，不要求每个 agent 启动完整服务。
+ 
++编码任务默认包含完成后的本地提交与[自动回合并](references/workflows/回合并.md)：开始时记录主仓库目标工作区和分支，由主 agent 串行执行“提交 → rebase 到最新目标 → 验证 → 目标快进更新”，不在 worktree 完成后就结束。用户明确要求只交补丁、不提交或不合并时沿用其要求。
++
+ 实际委派前读取[子代理协作](references/shared/子代理协作.md)及本次角色说明，只向子 agent 提供相关方法与原始材料。通过宿主提供的创建、消息、等待和中断能力执行委派；这些 Markdown 是任务指令，不会自动注册子 agent，`agents/openai.yaml` 是技能展示配置。工具或权限不支持委派时由主 agent 完成相应工作，并如实说明未做独立验证，不为配置子 agent 阻塞编码。
+ 
+ ## 执行流程
+@@ -43,7 +45,7 @@
+ 3. **检查架构和复用。** 实现前按[架构遵循](references/workflows/architecture.md)定位责任与合法依赖，按[代码复用](references/workflows/reuse.md)搜索已有能力和测试，再选择直接复用、扩展、组合、提取或新建。可委派独立勘察，主 agent 核实影响当前实现的结论。不能先写一套，再把复用留给以后。
+ 4. **测试驱动实现。** 每个切片由同一执行 agent 按[TDD](references/workflows/tdd.md)先运行能证明目标行为缺失的测试，再做满足约束的最小实现，必要重构并回归。已有有效失败用例直接复用；已经通过时核实剩余缺口，不制造失败。不要把同一切片的 RED 与 GREEN 分派给不同 agent。
+ 5. **按切片复核方向。** 每个切片结束后对照有效任务检查实际改动、架构、重复实现和测试，按[代码审查](references/workflows/代码审查.md)选择适当深度，衔接自动检查、独立判断、缺陷核实和修复复核。新事实或用户要求改变前提时，更新依据、计划和检查影响；通知或停止受影响子任务，防止继续写入旧方案。必要关联改动继续，无依据扩展退出当前范围。
+-6. **验证和交付。** 按[验证与交接](references/workflows/verification.md)检查整合后的最终差异、验收覆盖和证据有效性。按需用[自动检查](references/workflows/自动检查.md)复用本地／CI 命令及可选执行器；自动检查、独立审查、运行验收分别判断，不借用旧代码或旧提交的通过结果。分别报告实现、实际验证、阻塞和剩余风险，需要继续时保存恢复状态。
++6. **验证、回合并和交付。** 按[验证与交接](references/workflows/verification.md)检查最终差异、验收覆盖和证据有效性，按[自动回合并](references/workflows/回合并.md)完成本地任务提交、目标整合及合并后验证。按需用[自动检查](references/workflows/自动检查.md)复用本地／CI 命令及可选执行器；自动检查、独立审查、运行验收分别判断，不借用旧代码或旧提交的通过结果。分别报告实现、实际验证、回合并状态、阻塞和剩余风险，需要继续时保存恢复状态。
+ 
+ ## 四项执行约束
+ 
+@@ -60,6 +62,6 @@
+ 
+ 按[项目上下文与恢复](references/shared/project-context.md)复用项目现有配置、任务、文档和交接位置；不强制任何文件名。确需保存时可使用[开发交接模板](assets/开发交接模板.md)，只保留当前任务所需内容。业务材料写入目标项目，不能默认写进技能包。
+ 
+-远端任务和文档由当前环境可用的连接器、CLI 或其他能力按实际授权处理，不是本技能的必需依赖。只有链接不代表已经授权写入；已有明确写回约定不重复询问。工具不可用时交付本地或对话中的可用结果，并说明未同步。提交、推送、PR、部署与发布按实际请求和适用项目约定执行，不在普通编码任务中自动发布。
++远端任务和文档由当前环境可用的连接器、CLI 或其他能力按实际授权处理，不是本技能的必需依赖。只有链接不代表已经授权写入；已有明确写回约定不重复询问。工具不可用时交付本地或对话中的可用结果，并说明未同步。本地任务提交与回合并是默认交付步骤，无需每次再次询问；推送、PR、部署与发布仍按实际请求和适用项目约定执行。
+ 
+ 本技能不约定技术栈、覆盖率阈值、复用比例、统一分层、固定开发批次或额外审批。约束强度来自有效要求与实际风险；检查范围随任务和影响确定。
+--- a/assets/开发交接模板.md
++++ b/assets/开发交接模板.md
+@@ -13,6 +13,7 @@
+ 
+ - 工作区开始状态及需要保留的已有修改：
+ - 本会话专属 worktree 路径（非 Git 项目为独立副本）、分支／基线及带入的未提交修改：
++- 主仓库回合并目标路径、分支与起始提交；原任务提交与 rebase 后提交对应关系：
+ - 当前实现位置与对应验收／必要支撑：
+ - 复用候选及采用方式；重要新建理由：
+ - 架构检查的具体位置与结果：
+@@ -28,6 +29,7 @@
+ ## 审查与自动检查（按实际需要保留）
+ 
+ - 本轮基线、最终代码状态、适用审查约定与实际检查入口：
++- 回合并实际状态、目标最终提交、合并后检查与未完成原因：
+ - 自动检查结果／日志及对应输入、配置和 CI 提交；需重验项：
+ - 独立审查与运行验收分别覆盖了什么、仍有哪些限制：
+ - 发现标识、位置／后果／证据、归属、处置理由及修复复验状态：
+--- a/references/shared/project-context.md
++++ b/references/shared/project-context.md
+@@ -22,4 +22,4 @@
+ 4. 对变化做有边界的影响检查；已执行结果保留原范围，必要项重新验证。检查已有审查发现、修复及误报处置，对照最终代码、检查配置和 CI 实际提交核实证据有效性，不因上次记录“通过”就沿用结论。
+ 5. 恢复下一条有明确验收或验证条件的切片，沿用原任务和追溯关系，不重建重复任务。
+ 
+-交接至少说明：有效目标及来源、当前改动、已完成／未完成行为、最后实际测试及环境、架构和复用决定、阻塞，以及下一步。存在子任务时补充角色、目标、修改归属、实际状态、待整合结果和证据适用范围，沿用已有记录即可。恢复信息负责导航，不替代业务规则正文。
++交接至少说明：有效目标及来源、当前改动、已完成／未完成行为、最后实际测试及环境、架构和复用决定、阻塞，以及下一步。按[自动回合并](../workflows/回合并.md)保留主仓库目标路径、分支、起始与最终提交、原任务提交到 rebase 后提交的对应关系及实际合并／检查状态；恢复时先核实目标是否已包含重放后的结果，避免因原提交哈希改变而重复操作。存在子任务时补充角色、目标、修改归属、实际状态、待整合结果和证据适用范围，沿用已有记录即可。恢复信息负责导航，不替代业务规则正文。
+--- a/references/shared/并发工作区.md
++++ b/references/shared/并发工作区.md
+@@ -6,7 +6,7 @@
+ 
+ - Git 项目开始写入前必须创建或绑定本会话专属 worktree；宿主已为本会话分配的专属 worktree 直接复用。核实实际路径、归属和基线，不因源目录干净、暂未发现其他会话或声称可以独占而直接在原始检出目录写入。
+ - 会话内主 agent、实现、勘察与独立验证子 agent 默认共用会话 worktree，不为子任务另建 worktree。只读任务不因本规则强制创建 worktree；需要稳定验证输入时暂停相关写入并记录状态，不以新的工作区代替文件协调。
+-- 各会话使用各自分支或 detached HEAD，不让不同会话移动同一工作分支。所有读取、修改、测试、构建、格式化和生成命令明确指向本会话的绝对路径；派发时核实子 agent 实际使用同一会话路径及有效基线。
++- 各会话使用各自分支或 detached HEAD，不让不同会话移动同一工作分支。开发命令明确指向本会话的绝对路径；派发时核实子 agent 实际使用同一会话路径及有效基线。开始时另记录主仓库目标路径、分支及起始提交；只有完成后的[自动回合并](../workflows/回合并.md)阶段，在串行协调下更新该目标工作区。
+ - Git worktree 不可用时暂停项目写入，继续可做的读取，不退回原目录或独立克隆来绕过会话 worktree 要求。非 Git 项目使用会话独立副本或宿主隔离，并保存基线和差异；不能隔离则暂停写入，不为本规则强行初始化 Git。
+ 
+ ## 固定输入与修改归属
+@@ -35,6 +35,6 @@
+ 
+ ## 整合、变化与回收
+ 
+-子 agent 在会话 worktree 直接修改负责文件，返回实际差异、验证所对应的状态和未完成项，不要求额外交付提交或补丁。主 agent 等待相关写入完成，核对切片边界、接口与整体回归；不把已在当前目录中的改动再应用一遍。不同会话的结果仍通过显式合并或补丁整合，不静默跟随其他分支变化。需求或目标版本变化时按[协作约定](子代理协作.md#执行变化与回收)停止受影响工作，重新确认归属和有效输入。
++子 agent 在会话 worktree 直接修改负责文件，返回实际差异、验证所对应的状态和未完成项，不要求额外交付提交或补丁。主 agent 等待相关写入完成，核对切片边界、接口与整体回归；不把已在当前目录中的改动再应用一遍。任务验收通过后，主 agent 按[自动回合并](../workflows/回合并.md)将本次结果提交并串行合并回记录的主仓库目标，不停留在会话 worktree 交付。需求或目标版本变化时按[协作约定](子代理协作.md#执行变化与回收)停止受影响工作，重新确认归属和有效输入。
+ 
+-worktree 仍共享部分 Git 元数据；分支引用、仓库配置及清理操作可能影响其他执行者。只操作本任务拥有的分支与工作区，不整体重置、强制更新共享分支或清理他人 worktree。确认执行者及后台进程停止、结果与证据已保留后，才通过宿主或项目约定回收本任务的临时工作区；不为隔离引入自动推送、发布或额外审批。
++worktree 仍共享部分 Git 元数据；分支引用、仓库配置及清理操作可能影响其他执行者。只操作本任务拥有的分支与工作区及已记录的回合并目标，不整体重置、强制更新共享分支或清理他人 worktree。确认回合并及必要检查完成、结果与证据已保留、执行者及后台进程停止后，才通过宿主或项目约定回收本任务的临时工作区；不为隔离引入自动推送、发布或额外审批。
+--- a/references/workflows/verification.md
++++ b/references/workflows/verification.md
+@@ -16,6 +16,8 @@
+ 
+ 按[并发工作区](../shared/并发工作区.md)核对受测路径及版本，包括应用实际运行的代码。并发开发不要求并发启动完整环境；重型集成可在整合后集中执行，必需项在实际运行前保持待验证。
+ 
++默认按[自动回合并](回合并.md)将任务结果本地提交，rebase 到主仓库目标分支最新提交，验证后快进更新目标工作区并执行要求的合并后检查。不同会话串行完成此流程；证据绑定 rebase 后实际候选，不借用原提交通过。
++
+ ## 交付前核对
+ 
+ - **范围：** 从本次开始的工作区基线查看自己的改动及新增文件，逐项对应有效任务、验收或必要支撑；移除自己的无关扩展，保留他人修改。
+@@ -31,6 +33,8 @@
+ 
+ 当前任务范围的行为已实现，适用架构与兼容约束满足，必要检查和验收有相应证据，阻塞与遗留按约定处理，才能报告该范围完成。只完成部分时明确部分范围，不把已写测试、替身通过、任务关闭或代码已提交当成完整交付。
+ 
++除用户明确不合并等适用例外，完成还包括自动回合并及其必要检查。未回合并、已合并待检查或合并后检查失败时分别报告，不将 worktree 中的通过作为主仓库已完成依据。
++
+ 任务没有要求部署或业务验收时，不自行增加上线关卡；确有这些要求则分别关联实际结果。不能证明整体完成时，交付已有成果并说明下一步，不夸大也不隐藏。
+ 
+ ## 结果与交接
+--- a/references/workflows/自动检查.md
++++ b/references/workflows/自动检查.md
+@@ -14,6 +14,8 @@
+ | 修复后 | 缺陷复现用例及受影响回归 | 聚焦修复，依据影响扩大；不重复整个无变化过程 |
+ | 交付、提交或已有 PR 更新时 | 核对证据是否仍有效，执行已有 CI 必需项 | 待运行、失败、超时和旧提交结果不能冒充当前成功 |
+ | 已授权的合并或发布 | 项目要求的合并后检查、冒烟及恢复核对 | 沿用项目实际流程，不从普通编码自动进入发布 |
++
++本地回合并属于[默认交付](回合并.md)，核实最新目标的实际整合候选，并将合并后必需检查关联到目标最终提交。远端 PR 自动合并、推送与发布不因此获得授权。
+ 
+ 宿主已有文件事件、任务结束事件或 CI 入口时，可接入同一检查命令。命令式自动检查是否能阻止完成，由宿主／CI 对退出码的处理决定，Markdown 本身没有强制能力。结束事件只核实当前结果，过期时返回失败原因并安排修复／重跑；避免结束事件反复启动新的审查或无限重试。
+ 
+@@ -63,4 +65,4 @@
+ 
+ 核实会重算指定输入的内容与元数据及配置摘要，保留原始报告且不执行检查命令；失效或失败结果不变成通过。当前证据格式为 `schema_version: 2`；不支持的旧格式返回证据错误，须重新运行，不能据此取得通过。它只能核对所声明的输入，不能验证历史 TDD、模型审查、规定的人审或未声明的依赖。
+ 
+-CI 可直接调用同一执行器，用退出码决定该检查作业是否成功，并上传日志和 `result.json`；即使失败也保存工件。每轮用新目录，按实际提交关联结果。优先使用现有上传和检查机制，不默认推送代码、发布评论、放宽必需检查或配置自动合并。宿主事件接入应使用该宿主真实协议及防重入机制，未实际安装或验证时只交付配置说明，不声称自动触发已生效。
++CI 可直接调用同一执行器，用退出码决定该检查作业是否成功，并上传日志和 `result.json`；即使失败也保存工件。每轮用新目录，按实际提交关联结果。优先使用现有上传和检查机制，不默认推送代码、发布评论、放宽必需检查或配置远端 PR 自动合并。宿主事件接入应使用该宿主真实协议及防重入机制，未实际安装或验证时只交付配置说明，不声称自动触发已生效。
+--- a/tests/并发工作区验证记录.md
++++ b/tests/并发工作区验证记录.md
+@@ -1,4 +1,8 @@
+ # 并发工作区与运行资源验证记录
++
++## 后续修订：完成后自动回合并
++
++会话隔离与会话内共享规则保留，新增默认本地提交、仓库级串行回合并及合并后检查。工作区完成不再等同于整个任务完成，具体执行与证据见[自动回合并验证记录](自动回合并验证记录.md)。以下各轮快照与日志保持原样，不作为新规则已执行的替代依据。
+ 
+ ## 后续修订：隔离边界改为会话
+ 
+--- a/tests/行为验证.md
++++ b/tests/行为验证.md
+@@ -44,6 +44,10 @@
+ | M-12 | 局部计算任务不需要服务，另有必须使用共享可变环境的集成检查 | 不按 agent 数量启动服务；安全共享基础设施按需隔离数据，不能隔离的环境跨会话协调后串行使用；实际受测版本明确 |
+ | M-13 | 不同工作区的重叠修改在整合时发生冲突 | 明确保留冲突并核实解决；不强制更新其他会话分支，不借用整合前通过结果作为整合后验收 |
+ | M-14 | Git worktree 不可用，原始检出目录干净或看似无人使用 | 不以声称独占、改用克隆或本会话串行为由绕过专属 worktree 要求；暂停写入，继续读取；非 Git 项目使用会话独立副本 |
++| M-15 | 明确编码任务在专属 worktree 实现且验收通过，原始分支可用 | 默认提交本次任务改动并自动回合并到启动时记录的目标分支和工作区，完成要求的合并后检查；无需再次确认，不自动推送或发布 |
++| M-16 | 两个会话从同一基线开发，先完成的会话已更新主仓库 | 通过同一仓库级锁串行整合；后一个会话只将自己的未共享提交 rebase 到最新目标，记录前后提交并验证，再快进更新目标；保留双方结果且不新增 merge commit |
++| M-17 | 主工作区含用户未提交内容，或整合冲突未解决、候选测试失败 | 保留目标原状，不自动 stash、提交用户内容或强制覆盖；保留会话结果并如实报告未合并 |
++| M-18 | 回合并调用中断后恢复，rebase 已改变任务提交哈希，目标可能已包含结果 | 根据原提交与 rebase 后提交的对应关系核实目标实际状态，不因原哈希不再可达而重复提交或重放；完成剩余检查后再回收 worktree |
+ | C-01 | 项目已有测试、类型或边界检查入口；某项失败或超时 | 先复用实际命令，记录输出和当前状态；不降级必需项、不将不可执行视为通过，工具诊断不重复包装成模型意见 |
+ | C-02 | 独立审查产生疑点，干净实现也包含容易误判的特殊语义 | 核实原始约定、触发和后果；确认缺陷才要求修复，保留误报理由，不以投票或发现数量决定正确性 |
+ | C-03 | 既有自动检查全绿，但缺陷仍违反用户验收 | 绿灯不代替独立审查和真实验收；用原始要求定位漏检，并补充有区分能力的验证 |
+--- /dev/null
++++ b/references/workflows/回合并.md
+@@ -0,0 +1,31 @@
++# 完成后的自动回合并
++
++Git 编码任务默认由主 agent 按“本地提交 → rebase 到最新目标 → 验证 → 目标快进更新”交付，同时更新主仓库目标分支及工作区。使用 Git 提交级整合，不复制文件覆盖主仓库，也不默认创建 merge commit。无需逐次询问是否提交或回合并；用户明确只要补丁、不提交、不合并或项目有明确交付流程时沿用其要求。本地回合并不包含自动推送、远端 PR 合并、部署或发布。
++
++## 开始时定位目标
++
++记录目标仓库、原始工作区绝对路径、目标分支及起始提交。优先沿用用户或项目明确的目标；没有另行指定时，使用启动任务的原始工作区当时所在的本地分支，不猜测固定名为 main 或 master，也不把远端地址当成本地目标。目标处于 detached HEAD 或存在多个有效目标时，先查已有任务与交接；仍无法确定则只暂停回合并，继续不依赖该选择的开发。
++
++入口已是会话专属 worktree 时，从宿主创建来源或已有交接定位原主工作区及目标分支，沿用已记录目标，不能把会话分支自身当作回合并目标。缺少来源时先核实仓库 worktree 信息，仍不能确认则报告具体缺口。
++
++记录会话 worktree、任务起始输入与带入的已有修改。只提交本次任务改动，使用明确文件或选定差异暂存，不把用户已有修改、他人工作、缓存和验证工件顺手提交。本次实现若依赖尚未提交且无法分离的已有修改，说明具体依赖并保留结果，不能代用户提交这些内容。
++
++## 串行整合并更新主工作区
++
++回合并由主 agent 执行，先等待本会话相关子任务与后台写入停止。多个会话合并同一仓库时使用同一仓库级合并锁或宿主等效队列；锁位于各 worktree 共用的 Git 目录，约定名称为 `coder-assistant-merge.lock`。锁覆盖读取最新目标、整合验证、更新目标与合并后检查，不能用会话内标记或 Git 短暂的 index.lock 代替。优先使用能随持有进程退出释放的锁，并在本轮等待预算内排队，不无限重试。
++
++持有锁后：
++
++1. **核实目标与前置状态。** 重新确认目标工作区仍检出记录的目标分支、没有进行中的合并／变基及未提交修改，包括暂存和未跟踪文件；确认会话任务提交及其验证证据有效。目标不干净时保留其状态，不自动 stash、提交或清理用户工作，标明回合并暂未完成。
++2. **Rebase 到最新目标。** 读取当前目标提交；先核实已记录的任务结果（含 rebase 后提交）是否已被目标包含，已包含时核实目标状态与所需验证，直接报告已合并。否则确认待重放序列只包含本会话尚未共享的任务提交，在会话 worktree 执行 `git rebase --no-autostash <目标最新提交>`。不重放、改写其他会话或已回合并的提交，不强制回退目标；不能确认提交归属时保留结果并报告具体缺口。
++3. **验证 rebase 后候选。** 在会话 worktree 处理有明确依据的 rebase 冲突，保存重放前后提交对应关系，再检查实际差异、接口与受影响回归。无法确定正确解法或检查失败时保留会话结果，目标不动，明确报告未合并。没有变化的有效检查可复用，发生重放或冲突修复后不能直接借用 rebase 前通过。
++4. **快进更新目标。** 再次核实目标分支、提交及干净状态，使用普通 Git 安全更新，例如在目标工作区执行 `git merge --ff-only --no-autostash <已验证候选提交>`。目标在检查期间又变化时回到最新目标重新整合并验证，不能强制更新引用、reset 或覆盖文件；持续变化时保留结果并报告暂未合并。
++5. **核实完成。** 确认目标分支和工作区实际包含本次结果，在目标状态执行项目要求的合并后检查，记录最终提交、受测状态和结果，再释放锁。合并后检查失败时如实报告“已合并、验证失败”，保留现场并修复，不自动重置可能已被其他会话使用的目标。
++
++任务在 detached 会话 worktree 开发也可使用已保存的候选提交；目标必须是已定位的本地分支与工作区。不能绕过 Git 对其他 worktree、未提交修改或分支状态的保护。
++
++## 完成判断与恢复
++
++默认交付同时要求实现验收和回合并完成。仅 worktree 测试通过、仅生成补丁或仅创建本地提交时，分别报告实际进度，不能称已合并回主仓库。非 Git 项目按已有文件交付约定处理，不强行初始化 Git 或伪造合并结果。
++
++Rebase 完成后、更新目标之前即保存原任务提交与 rebase 后提交的对应关系。恢复时先核实原目标、该对应关系、目标当前 HEAD、是否已有 rebase 进行中及是否已包含重放后的结果，再继续；不能仅因原提交哈希改变而重复交付。调用超时或中断不能直接重复提交、rebase、快进或删除 worktree。记录“未合并／已合并待检查／已合并且检查通过”等实际状态。确认目标包含结果、必要检查通过、证据已保留且执行者停止后，才按宿主约定回收本任务的临时 worktree；受阻时保留它。
+--- /dev/null
++++ b/tests/自动回合并验证记录.md
+@@ -0,0 +1,47 @@
++# 自动回合并验证记录
++
++日期：2026-10-30（Asia/Shanghai）。用户要求会话专属 worktree 开发完成后自动合并回主仓库，并进一步指定采用 rebase。本轮将“本地任务提交 → rebase 到最新目标 → 验证 → 目标快进更新”及合并后检查加入默认完成条件。会话内共享 worktree 和按需使用运行资源的规则保留。
++
++## 规则与被测状态
++
++新增[自动回合并方法](../references/workflows/回合并.md)，同步技能入口、会话工作区、验收、恢复、自动检查和交接。默认目标为任务启动时记录的原始本地分支与工作区，不固定为 main；已有会话 worktree 恢复时核实原目标，不将会话分支自身当成目标。只有本地回合并为默认步骤，远端推送、PR、部署与发布不随之执行。
++
++新版本通过[技能文件摘要](验证证据/自动回合并/技能快照.json)定位；本目录没有 Git 元数据，本次未为它初始化 Git。所有 Git 操作和分支更新只发生在隔离临时夹具。[完整工件](验证证据/自动回合并/完整工件.tar.gz)保留修改前材料、模型被测技能快照、夹具、命令与输出。
++
++## 可运行机制演练
++
++[回合并场景](验证证据/自动回合并/回合并场景.py)使用真实 Git worktree、真实提交和 POSIX 进程锁，实际运行 8 项，均通过：
++
++| 场景 | 实际核对 |
++|---|---|
++| 干净目标正常完成 | 目标分支及检出文件更新到候选提交，工作区干净 |
++| 两个进程并发完成 | 通过同一仓库级锁排队，后者 rebase 到最新目标，保留双方结果和重放后提交，新增历史不产生 merge commit |
++| 双方修改同一行 | 冲突保留在会话 worktree，目标提交与文件不变 |
++| 目标含用户未保存／未跟踪内容 | 不 stash、不提交、不覆盖，目标及用户内容保持原样 |
++| 实际候选验收失败 | 不推进目标分支，保留会话结果 |
++| Rebase 改变提交后再次执行 | 根据重放后提交确认已包含结果，不因原哈希变化产生重复提交或交付 |
++| 目标工作区切换了分支 | 不静默合并到新分支 |
++| 合并后检查才失败 | 报告已合并但验证失败，不自动重置目标 |
++
++这些是维护者的机制演练，不是生产自动合并工具，也不证明模型总会选择相同命令。原始输出及检查退出码保存于[维护检查](验证证据/自动回合并/维护检查.json)。
++
++## 独立编码行为演练
++
++首轮从无实现会话历史的新上下文启动 agent `01a18a9e-ae36-77a2-aaa7-43de7a53b792`，只提供固定技能入口、临时源项目、原始函数需求和允许的副作用范围。任务为实现整数翻倍函数，初始入口为 `NotImplementedError`；原始分支命名为 `delivery-target`，没有名为 main 的目标。请求不额外提示目标实现或预期合并结论；允许按技能规定创建 worktree、本地任务提交及更新临时目标，不允许联网、推送或修改全局配置。
++
++首轮模型实际创建专属 worktree，执行 RED（退出 1）、GREEN 和完整回归后本地提交；持仓库级锁快进更新原始 `delivery-target`，合并后 4 项测试通过，主工作区干净，并回收其临时 worktree。维护者核对最终提交为 `e15fbd4a1d26c562f0c5ba11d1bf0082e2434448`，仅改动实现及新增测试，原始材料保留。记录见完整工件中的 `agent-evidence/` 与 `维护者核对.json`。
++
++首轮模型读取启动时冻结的 `skill/`，当时用户尚未指定 rebase，且目标没有前进；该轮证明自动提交、实际回合并与检查，不能用来证明重放分歧提交。用户指定 rebase 后固定新的 `rebase-skill/`，不让执行中的模型默默切换规则。最终技能与两阶段模型被测快照分别保存。
++
++第二阶段由新上下文 agent `01a18aa7-d4a9-7b01-995f-c424e3b5d4e1` 接手已创建的会话 worktree，实现整数三倍函数。夹具在创建 worktree 后先向原目标提交另一会话的 notes 更新，使会话与目标实际分歧；原始目标和起始状态作为交接材料提供，不提示实现答案。
++
++- 任务原提交为 `c279c96541449abc9d9b00f1a9349007ac7f9bde`，实际持锁执行 rebase 后变为 `0150ff75201f3b704cf4409e665bb202ab4e2dec`，对应关系在目标更新前保存。
++- Rebase 后候选测试及目标快进后的 4 项测试全部通过。维护者核实目标最终提交的直接父提交为另一会话已交付的 `4e7b833c7f18150e7752f603faf1bed961015331`，新增历史没有 merge commit。
++- 主工作区和会话 worktree 的 Git 状态均干净；另一会话的 notes、原有测试及项目材料保留；本次只增加实现与对应测试。
++- 实际执行的持锁源码保存在完整工件的 `rebase-evidence/deliver.py`，Git 命令、退出码、RED/GREEN、提交映射及检查结果同目录保存。维护者另行核对结果见[rebase 交付核对](验证证据/自动回合并/rebase交付核对.json)。
++
++最终技能文件摘要与第二阶段固定快照一致。技能格式、34 项维护测试、8 项 rebase 回合并机制演练及最终包内引用检查均通过；具体输出见维护检查文件。
++
++## 结论边界
++
++机制演练覆盖 M-15 至 M-18 的本地合并、串行协调、保留失败现场与幂等行为。没有验证真实远端仓库、平台保护规则、所有操作系统或两个真实模型同时自动回合并。Git worktree 仍由宿主或实际 Git 能力提供，Markdown 规则本身不构成权限隔离、事件钩子或后台自动化。
+--- /dev/null
++++ b/tests/验证证据/自动回合并/回合并场景.py
+@@ -0,0 +1,202 @@
++"""维护者机制演练，使用真实 Git 与进程锁；不是技能运行时的自动合并工具。"""
++
++from pathlib import Path
++import fcntl
++import json
++import subprocess
++import sys
++import tempfile
++import time
++import unittest
++
++
++def finish_session(target, session):
++    """在夹具中执行文档所述候选预验、串行快进和合并后核实。"""
++    trace = []
++    old_task = None
++    rebased_task = None
++
++    def command(cwd, *argv):
++        result = subprocess.run(argv, cwd=cwd, text=True, capture_output=True)
++        trace.append({"cwd": str(cwd), "argv": argv, "exit_code": result.returncode,
++                      "stdout": result.stdout, "stderr": result.stderr})
++        return result
++
++    def answer(status):
++        return {"status": status, "original_task_commit": old_task,
++                "rebased_task_commit": rebased_task, "trace": trace}
++
++    common = command(session, "git", "rev-parse", "--git-common-dir")
++    if common.returncode:
++        return answer("invalid_repository")
++    gitdir = Path(common.stdout.strip())
++    if not gitdir.is_absolute():
++        gitdir = (session / gitdir).resolve()
++    with (gitdir / "coder-assistant-merge.lock").open("a") as lock:
++        deadline = time.monotonic() + 5
++        while True:
++            try:
++                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
++                break
++            except BlockingIOError:
++                if time.monotonic() > deadline:
++                    return answer("lock_timeout")
++                time.sleep(0.02)
++        branch = command(target, "git", "symbolic-ref", "--short", "HEAD")
++        if branch.returncode or branch.stdout.strip() != "delivery-target":
++            return answer("wrong_target")
++        if command(target, "git", "status", "--porcelain").stdout.strip():
++            return answer("dirty_target")
++        target_head = command(target, "git", "rev-parse", "HEAD").stdout.strip()
++        candidate = command(session, "git", "rev-parse", "HEAD").stdout.strip()
++        old_task = candidate
++        if command(session, "git", "merge-base", "--is-ancestor", candidate, target_head).returncode == 0:
++            checked = command(target, sys.executable, "-B", "verify.py")
++            return answer("already_merged" if checked.returncode == 0 else "postcheck_failed")
++        combined = command(session, "git", "rebase", "--no-autostash", target_head)
++        if combined.returncode:
++            return answer("conflict")
++        rebased_task = command(session, "git", "rev-parse", "HEAD").stdout.strip()
++        checked = command(session, sys.executable, "-B", "verify.py")
++        if checked.returncode:
++            return answer("candidate_failed")
++        candidate = command(session, "git", "rev-parse", "HEAD").stdout.strip()
++        if command(target, "git", "symbolic-ref", "--short", "HEAD").stdout.strip() != "delivery-target":
++            return answer("wrong_target")
++        if command(target, "git", "rev-parse", "HEAD").stdout.strip() != target_head:
++            return answer("target_changed")
++        if command(target, "git", "status", "--porcelain").stdout.strip():
++            return answer("dirty_target")
++        merged = command(target, "git", "merge", "--ff-only", "--no-autostash", candidate)
++        if merged.returncode:
++            return answer("merge_rejected")
++        checked = command(target, sys.executable, "-B", "verify.py")
++        return answer("merged" if checked.returncode == 0 else "postcheck_failed")
++
++
++class ReturnMergeTests(unittest.TestCase):
++    def setUp(self):
++        self.temp = tempfile.TemporaryDirectory(prefix="coder-return-merge-")
++        self.addCleanup(self.temp.cleanup)
++        self.root = Path(self.temp.name)
++        self.target = self.root / "source"
++        self.target.mkdir()
++        self.git(self.target, "init", "-b", "delivery-target")
++        self.git(self.target, "config", "user.name", "Fixture")
++        self.git(self.target, "config", "user.email", "fixture@example.invalid")
++        (self.target / "data.py").write_text("a = 0\n" + "# independent boundary\n" * 10 + "b = 0\n")
++        (self.target / "verify.py").write_text("from data import a, b\nassert a >= 0 and b >= 0\n")
++        (self.target / "notes.txt").write_text("user original\n")
++        self.git(self.target, "add", ".")
++        self.git(self.target, "commit", "-m", "baseline")
++        self.baseline = self.head(self.target)
++        self.a, self.b = self.root / "a", self.root / "b"
++        for path in (self.a, self.b):
++            self.git(self.target, "worktree", "add", "--detach", str(path), "HEAD")
++
++    def git(self, cwd, *argv):
++        return subprocess.check_output(["git", *argv], cwd=cwd, text=True, stderr=subprocess.PIPE)
++
++    def head(self, cwd):
++        return self.git(cwd, "rev-parse", "HEAD").strip()
++
++    def change(self, session, name, value):
++        path = session / "data.py"
++        path.write_text(path.read_text().replace(f"{name} = 0", f"{name} = {value}"))
++        self.git(session, "add", "data.py")
++        self.git(session, "commit", "-m", f"implement {name}")
++        return self.head(session)
++
++    def test_clean_completion_updates_target_branch_and_working_files(self):
++        commit = self.change(self.a, "a", 1)
++        result = finish_session(self.target, self.a)
++        self.assertEqual(result["status"], "merged", result)
++        self.assertEqual(self.head(self.target), commit)
++        self.assertIn("a = 1", (self.target / "data.py").read_text())
++        self.assertEqual(self.git(self.target, "status", "--porcelain"), "")
++
++    def test_two_processes_rebase_against_latest_target_without_losing_changes(self):
++        commits = [self.change(self.a, "a", 1), self.change(self.b, "b", 2)]
++        processes = [subprocess.Popen(
++            [sys.executable, str(Path(__file__).resolve()), "--finish", str(self.target), str(session)],
++            text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
++        ) for session in (self.a, self.b)]
++        try:
++            for process in processes:
++                out, err = process.communicate(timeout=15)
++                self.assertEqual(process.returncode, 0, out + err)
++                self.assertEqual(json.loads(out)["status"], "merged", out)
++        finally:
++            for process in processes:
++                if process.poll() is None:
++                    process.kill()
++                    process.communicate()
++        delivered = [self.head(self.a), self.head(self.b)]
++        self.assertNotEqual(delivered, commits, "后一个会话应在前一个结果之上重放")
++        for commit in delivered:
++            self.git(self.target, "merge-base", "--is-ancestor", commit, "HEAD")
++        self.assertEqual(self.git(self.target, "rev-list", "--min-parents=2", self.baseline + "..HEAD"), "")
++        source = (self.target / "data.py").read_text()
++        self.assertIn("a = 1", source)
++        self.assertIn("b = 2", source)
++
++    def test_conflict_is_kept_in_session_and_target_is_preserved(self):
++        self.change(self.a, "a", 1)
++        self.change(self.b, "a", 2)
++        self.assertEqual(finish_session(self.target, self.a)["status"], "merged")
++        before = self.head(self.target), (self.target / "data.py").read_bytes()
++        self.assertEqual(finish_session(self.target, self.b)["status"], "conflict")
++        self.assertEqual((self.head(self.target), (self.target / "data.py").read_bytes()), before)
++        self.assertIn("UU data.py", self.git(self.b, "status", "--porcelain"))
++
++    def test_dirty_target_is_not_stashed_committed_or_overwritten(self):
++        self.change(self.a, "a", 1)
++        (self.target / "notes.txt").write_text("user unsaved\n")
++        (self.target / "draft.txt").write_text("untracked draft\n")
++        before = self.git(self.target, "status", "--porcelain")
++        self.assertEqual(finish_session(self.target, self.a)["status"], "dirty_target")
++        self.assertEqual(self.head(self.target), self.baseline)
++        self.assertEqual(self.git(self.target, "status", "--porcelain"), before)
++        self.assertEqual((self.target / "notes.txt").read_text(), "user unsaved\n")
++        self.assertEqual((self.target / "draft.txt").read_text(), "untracked draft\n")
++        self.assertEqual(self.git(self.target, "stash", "list"), "")
++
++    def test_failed_candidate_does_not_advance_target(self):
++        self.change(self.a, "a", -1)
++        self.assertEqual(finish_session(self.target, self.a)["status"], "candidate_failed")
++        self.assertEqual(self.head(self.target), self.baseline)
++        self.assertIn("a = 0", (self.target / "data.py").read_text())
++
++    def test_resuming_completed_merge_is_idempotent(self):
++        self.change(self.a, "a", 1)
++        original_b = self.change(self.b, "b", 2)
++        self.assertEqual(finish_session(self.target, self.a)["status"], "merged")
++        result = finish_session(self.target, self.b)
++        self.assertEqual(result["status"], "merged")
++        self.assertEqual(result["original_task_commit"], original_b)
++        self.assertNotEqual(result["rebased_task_commit"], original_b)
++        previous = self.head(self.target)
++        self.assertEqual(finish_session(self.target, self.b)["status"], "already_merged")
++        self.assertEqual(self.head(self.target), previous)
++
++    def test_changed_target_branch_is_not_used_silently(self):
++        self.change(self.a, "a", 1)
++        self.git(self.target, "switch", "-c", "other-target")
++        self.assertEqual(finish_session(self.target, self.a)["status"], "wrong_target")
++        self.assertEqual(self.head(self.target), self.baseline)
++
++    def test_postcheck_failure_is_reported_without_resetting_merged_target(self):
++        self.change(self.a, "a", 1)
++        (self.a / "verify.py").write_text("from pathlib import Path\nassert Path.cwd().name != 'source'\n")
++        self.git(self.a, "add", "verify.py")
++        self.git(self.a, "commit", "-m", "simulate target-only check failure")
++        candidate = self.head(self.a)
++        self.assertEqual(finish_session(self.target, self.a)["status"], "postcheck_failed")
++        self.assertEqual(self.head(self.target), candidate)
++
++
++if __name__ == "__main__":
++    if len(sys.argv) == 4 and sys.argv[1] == "--finish":
++        print(json.dumps(finish_session(Path(sys.argv[2]), Path(sys.argv[3])), ensure_ascii=False))
++    else:
++        unittest.main(verbosity=2)
