@@ -1,0 +1,78 @@
+退出码：1
+test_missing_order_is_rejected_without_write (test_api.OrderAPITests.test_missing_order_is_rejected_without_write) ... ERROR
+test_order_id_is_case_sensitive (test_api.OrderAPITests.test_order_id_is_case_sensitive) ... ERROR
+test_owner_cancels_open_order (test_api.OrderAPITests.test_owner_cancels_open_order) ... ERROR
+test_repeat_cancel_does_not_write_twice (test_api.OrderAPITests.test_repeat_cancel_does_not_write_twice) ... ERROR
+test_shipped_order_is_rejected_without_change (test_api.OrderAPITests.test_shipped_order_is_rejected_without_change) ... ERROR
+test_stranger_is_rejected_without_change (test_api.OrderAPITests.test_stranger_is_rejected_without_change) ... ERROR
+
+======================================================================
+ERROR: test_missing_order_is_rejected_without_write (test_api.OrderAPITests.test_missing_order_is_rejected_without_write)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/coder-assistant-v1-sfnsgn96/order_project/tests/test_api.py", line 42, in test_missing_order_is_rejected_without_write
+    self.api.cancel_order("missing", "alice")
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/coder-assistant-v1-sfnsgn96/order_project/order_app/api.py", line 9, in cancel_order
+    raise NotImplementedError("取消入口尚未接入")
+NotImplementedError: 取消入口尚未接入
+
+======================================================================
+ERROR: test_order_id_is_case_sensitive (test_api.OrderAPITests.test_order_id_is_case_sensitive)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/coder-assistant-v1-sfnsgn96/order_project/tests/test_api.py", line 47, in test_order_id_is_case_sensitive
+    self.api.cancel_order("a1", "alice")
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/private/tmp/coder-assistant-v1-sfnsgn96/order_project/order_app/api.py", line 9, in cancel_order
+    raise NotImplementedError("取消入口尚未接入")
+NotImplementedError: 取消入口尚未接入
+
+======================================================================
+ERROR: test_owner_cancels_open_order (test_api.OrderAPITests.test_owner_cancels_open_order)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/coder-assistant-v1-sfnsgn96/order_project/tests/test_api.py", line 19, in test_owner_cancels_open_order
+    self.assertEqual(self.api.cancel_order("A1", "alice"), {"id": "A1", "status": "cancelled"})
+                     ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/private/tmp/coder-assistant-v1-sfnsgn96/order_project/order_app/api.py", line 9, in cancel_order
+    raise NotImplementedError("取消入口尚未接入")
+NotImplementedError: 取消入口尚未接入
+
+======================================================================
+ERROR: test_repeat_cancel_does_not_write_twice (test_api.OrderAPITests.test_repeat_cancel_does_not_write_twice)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/coder-assistant-v1-sfnsgn96/order_project/tests/test_api.py", line 24, in test_repeat_cancel_does_not_write_twice
+    first = self.api.cancel_order("A1", "alice")
+  File "/private/tmp/coder-assistant-v1-sfnsgn96/order_project/order_app/api.py", line 9, in cancel_order
+    raise NotImplementedError("取消入口尚未接入")
+NotImplementedError: 取消入口尚未接入
+
+======================================================================
+ERROR: test_shipped_order_is_rejected_without_change (test_api.OrderAPITests.test_shipped_order_is_rejected_without_change)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/coder-assistant-v1-sfnsgn96/order_project/tests/test_api.py", line 36, in test_shipped_order_is_rejected_without_change
+    self.api.cancel_order("S1", "alice")
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/private/tmp/coder-assistant-v1-sfnsgn96/order_project/order_app/api.py", line 9, in cancel_order
+    raise NotImplementedError("取消入口尚未接入")
+NotImplementedError: 取消入口尚未接入
+
+======================================================================
+ERROR: test_stranger_is_rejected_without_change (test_api.OrderAPITests.test_stranger_is_rejected_without_change)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/coder-assistant-v1-sfnsgn96/order_project/tests/test_api.py", line 30, in test_stranger_is_rejected_without_change
+    self.api.cancel_order("A1", "bob")
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/private/tmp/coder-assistant-v1-sfnsgn96/order_project/order_app/api.py", line 9, in cancel_order
+    raise NotImplementedError("取消入口尚未接入")
+NotImplementedError: 取消入口尚未接入
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.002s
+
+FAILED (errors=6)
+

@@ -1,0 +1,20 @@
+{
+  "user_files_unchanged": true,
+  "expected": {
+    "项目说明.md": "b5d0da955c39120d54d4891d5f5e946ee14faf4a310488d5be3ae58729bad780",
+    "money.py": "fb1503f8335fe7e3283fbf51da5adef907e9e5b5c3062930aaa10a85c77ae59f",
+    ".gitignore": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+    "用户草稿.txt": "6fd53ba5250f490184120d714d5eb6fdba84de01d286a9e4d1d14238d3cb2399",
+    "tests/test_baseline.py": "148e5ac701955315a2eef93ad2b96096820f93a9fdc7232ac468cb4aaa89d2ed"
+  },
+  "actual": {
+    "项目说明.md": "b5d0da955c39120d54d4891d5f5e946ee14faf4a310488d5be3ae58729bad780",
+    "money.py": "fb1503f8335fe7e3283fbf51da5adef907e9e5b5c3062930aaa10a85c77ae59f",
+    ".gitignore": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+    "用户草稿.txt": "6fd53ba5250f490184120d714d5eb6fdba84de01d286a9e4d1d14238d3cb2399",
+    "tests/test_baseline.py": "148e5ac701955315a2eef93ad2b96096820f93a9fdc7232ac468cb4aaa89d2ed"
+  },
+  "head": "c7fb51a65399af2018e7e096d6c922d861d99e74",
+  "refs": "c7fb51a65399af2018e7e096d6c922d861d99e74 refs/heads/fixture-base",
+  "status": " M money.py\n?? 用户草稿.txt\n"
+}

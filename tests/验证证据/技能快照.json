@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-23",
+  "scope": "首版技能文件及维护脚本；非 Git 提交或安装清单",
+  "sha256": {
+    "SKILL.md": "32c5343224832ebcbb26f7784daf445632546263fdaecc60aa00d234da18edc5",
+    "agents/openai.yaml": "818529b0ce7365afeae6dce48da7f171f22dfd479e773f79b63aa39eaabb8a9a",
+    "assets/开发交接模板.md": "01b536a76a1864873196f3637f7c380a94ce249dc9e7bfc28c579230e6051423",
+    "references/shared/execution-contract.md": "721385b60b010c12a7026701a75606845063f1f027130df417f2bcb50802b7af",
+    "references/shared/input-and-evidence.md": "12f6a9911a8c406def740c5d3a2e236e8731a00ea6e650a60d47e6eca643d146",
+    "references/shared/project-context.md": "439862b291e58276150e01be79a227b97b3e8c300829d3e9c57962e28f50bd43",
+    "references/workflows/architecture.md": "e61ad969174b5598181126d70af0d81bcfccb96651009d9a456650047a5a0b78",
+    "references/workflows/reuse.md": "b8c45b96b70079b4450eddea26772393693f5ec7e8f6754c81bd7e0a6ac5c659",
+    "references/workflows/tdd.md": "0771af454658c8c4ff1685703db8b8c303c15aab989cadcd5f2f859122db8f81",
+    "references/workflows/verification.md": "6befab1cecb299a71ab78bbf0ff08ce50500f9a011e5cbc4301f8d16ec8f5de4",
+    "scripts/check_links.py": "fc5d05e36817131ec82b3d7d6f7d42054ae65a70338c8abe65226bb19aa58170"
+  }
+}

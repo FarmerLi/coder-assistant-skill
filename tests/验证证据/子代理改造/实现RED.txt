@@ -1,0 +1,124 @@
+test_already_cancelled_order_returns_result_without_write (test_api.OrderAPITests.test_already_cancelled_order_returns_result_without_write) ... ERROR
+test_api_forwards_arguments_to_the_public_service (test_api.OrderAPITests.test_api_forwards_arguments_to_the_public_service) ... ERROR
+test_case_distinct_order_ids_target_the_requested_order (test_api.OrderAPITests.test_case_distinct_order_ids_target_the_requested_order) ... ERROR
+test_missing_order_is_rejected_without_changing_data (test_api.OrderAPITests.test_missing_order_is_rejected_without_changing_data) ... ERROR
+test_order_id_lookup_remains_case_sensitive (test_api.OrderAPITests.test_order_id_lookup_remains_case_sensitive) ... ERROR
+test_owner_cancels_open_order (test_api.OrderAPITests.test_owner_cancels_open_order) ... ERROR
+test_repeat_cancel_returns_same_result_without_second_write (test_api.OrderAPITests.test_repeat_cancel_returns_same_result_without_second_write) ... ERROR
+test_shipped_order_is_rejected_without_changing_data (test_api.OrderAPITests.test_shipped_order_is_rejected_without_changing_data) ... ERROR
+test_stranger_cannot_repeat_cancel_another_owners_order (test_api.OrderAPITests.test_stranger_cannot_repeat_cancel_another_owners_order) ... ERROR
+test_stranger_is_rejected_without_changing_data (test_api.OrderAPITests.test_stranger_is_rejected_without_changing_data) ... ERROR
+
+======================================================================
+ERROR: test_already_cancelled_order_returns_result_without_write (test_api.OrderAPITests.test_already_cancelled_order_returns_result_without_write)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/project/tests/test_api.py", line 51, in test_already_cancelled_order_returns_result_without_write
+    self.api.cancel_order("C1", "alice"),
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/project/order_app/api.py", line 9, in cancel_order
+    raise NotImplementedError("取消入口尚未接入")
+NotImplementedError: 取消入口尚未接入
+
+======================================================================
+ERROR: test_api_forwards_arguments_to_the_public_service (test_api.OrderAPITests.test_api_forwards_arguments_to_the_public_service)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/project/tests/test_api.py", line 93, in test_api_forwards_arguments_to_the_public_service
+    OrderAPI(service).cancel_order("A1", "alice"),
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/project/order_app/api.py", line 9, in cancel_order
+    raise NotImplementedError("取消入口尚未接入")
+NotImplementedError: 取消入口尚未接入
+
+======================================================================
+ERROR: test_case_distinct_order_ids_target_the_requested_order (test_api.OrderAPITests.test_case_distinct_order_ids_target_the_requested_order)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/project/tests/test_api.py", line 84, in test_case_distinct_order_ids_target_the_requested_order
+    self.assertEqual(api.cancel_order("xy", "alice"), {"id": "xy", "status": "cancelled"})
+                     ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/project/order_app/api.py", line 9, in cancel_order
+    raise NotImplementedError("取消入口尚未接入")
+NotImplementedError: 取消入口尚未接入
+
+======================================================================
+ERROR: test_missing_order_is_rejected_without_changing_data (test_api.OrderAPITests.test_missing_order_is_rejected_without_changing_data)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/project/tests/test_api.py", line 73, in test_missing_order_is_rejected_without_changing_data
+    self.api.cancel_order("missing", "alice")
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/project/order_app/api.py", line 9, in cancel_order
+    raise NotImplementedError("取消入口尚未接入")
+NotImplementedError: 取消入口尚未接入
+
+======================================================================
+ERROR: test_order_id_lookup_remains_case_sensitive (test_api.OrderAPITests.test_order_id_lookup_remains_case_sensitive)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/project/tests/test_api.py", line 78, in test_order_id_lookup_remains_case_sensitive
+    self.api.cancel_order("a1", "alice")
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/project/order_app/api.py", line 9, in cancel_order
+    raise NotImplementedError("取消入口尚未接入")
+NotImplementedError: 取消入口尚未接入
+
+======================================================================
+ERROR: test_owner_cancels_open_order (test_api.OrderAPITests.test_owner_cancels_open_order)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/project/tests/test_api.py", line 33, in test_owner_cancels_open_order
+    self.api.cancel_order("A1", "alice"),
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/project/order_app/api.py", line 9, in cancel_order
+    raise NotImplementedError("取消入口尚未接入")
+NotImplementedError: 取消入口尚未接入
+
+======================================================================
+ERROR: test_repeat_cancel_returns_same_result_without_second_write (test_api.OrderAPITests.test_repeat_cancel_returns_same_result_without_second_write)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/project/tests/test_api.py", line 42, in test_repeat_cancel_returns_same_result_without_second_write
+    first = self.api.cancel_order("A1", "alice")
+  File "/private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/project/order_app/api.py", line 9, in cancel_order
+    raise NotImplementedError("取消入口尚未接入")
+NotImplementedError: 取消入口尚未接入
+
+======================================================================
+ERROR: test_shipped_order_is_rejected_without_changing_data (test_api.OrderAPITests.test_shipped_order_is_rejected_without_changing_data)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/project/tests/test_api.py", line 68, in test_shipped_order_is_rejected_without_changing_data
+    self.api.cancel_order("S1", "alice")
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/project/order_app/api.py", line 9, in cancel_order
+    raise NotImplementedError("取消入口尚未接入")
+NotImplementedError: 取消入口尚未接入
+
+======================================================================
+ERROR: test_stranger_cannot_repeat_cancel_another_owners_order (test_api.OrderAPITests.test_stranger_cannot_repeat_cancel_another_owners_order)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/project/tests/test_api.py", line 63, in test_stranger_cannot_repeat_cancel_another_owners_order
+    self.api.cancel_order("C1", "bob")
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/project/order_app/api.py", line 9, in cancel_order
+    raise NotImplementedError("取消入口尚未接入")
+NotImplementedError: 取消入口尚未接入
+
+======================================================================
+ERROR: test_stranger_is_rejected_without_changing_data (test_api.OrderAPITests.test_stranger_is_rejected_without_changing_data)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/project/tests/test_api.py", line 58, in test_stranger_is_rejected_without_changing_data
+    self.api.cancel_order("A1", "bob")
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/project/order_app/api.py", line 9, in cancel_order
+    raise NotImplementedError("取消入口尚未接入")
+NotImplementedError: 取消入口尚未接入
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.002s
+
+FAILED (errors=10)

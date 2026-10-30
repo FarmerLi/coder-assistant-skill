@@ -1,0 +1,463 @@
+--- a/SKILL.md
++++ b/SKILL.md
+@@ -30,13 +30,15 @@
+ | 独立验证 | 实质行为变更或复杂改动需要新的视角核对 | [独立验证子代理](references/agents/独立验证.md)：基于自动检查审查差异、核实缺陷并执行适用验收 |
+ | 并行实现 | 存在接口清楚、修改范围可分开的独立行为切片 | [实现子代理](references/agents/实现.md)：对分配切片完成测试、实现与回归 |
+ 
+-普通行为变更优先委派一次独立验证；小且低影响的改动可由主 agent 自行验证。需要大量阅读时增加勘察，有独立切片时才增加实现。默认同时最多 3 个子 agent，含嵌套任务，并受宿主实际并发上限约束；无需填满名额。紧密依赖、频繁共享状态或修改同一文件的工作保留在同一执行上下文。
++普通行为变更优先委派一次独立验证；小且低影响的改动可由主 agent 自行验证。需要大量阅读时增加勘察，有独立切片时才增加实现。默认同时最多 3 个子 agent，含嵌套任务，并受宿主实际并发上限约束；无需填满名额。紧密依赖、需要频繁同步中间状态的工作保留在同一执行上下文。
++
++支持不同会话同时修改同一仓库。开始写入前按[并发工作区](references/shared/并发工作区.md)确认本会话独占的工作区；子 agent 使用独立工作区或固定快照，写入者使用独立可写工作区。代码隔离不要求每个 agent 启动完整服务，运行资源按冲突和验证需要分配。
+ 
+ 实际委派前读取[子代理协作](references/shared/子代理协作.md)及本次角色说明，只向子 agent 提供相关方法与原始材料。通过宿主提供的创建、消息、等待和中断能力执行委派；这些 Markdown 是任务指令，不会自动注册子 agent，`agents/openai.yaml` 是技能展示配置。工具或权限不支持委派时由主 agent 完成相应工作，并如实说明未做独立验证，不为配置子 agent 阻塞编码。
+ 
+ ## 执行流程
+ 
+-1. **核对输入和现状。** 读取仓库指令、用户指定材料和任务直接相关代码，依据[输入与证据](references/shared/input-and-evidence.md)分清目标、约束、现状与假设。记录既有工作区修改及适用测试基线，不覆盖用户工作。
++1. **核对输入和现状。** 读取仓库指令、用户指定材料和任务直接相关代码，依据[输入与证据](references/shared/input-and-evidence.md)分清目标、约束、现状与假设。按[并发工作区](references/shared/并发工作区.md)确认会话工作区、固定输入状态并记录既有修改，再运行适用测试基线；不覆盖用户工作。
+ 2. **界定本次实现。** 按[执行契约](references/shared/execution-contract.md)明确结果、范围、验收、约束、依赖与验证方式。沿用已有任务和验收引用；没有编号时用可定位来源，不编造 ID。拆成可验收的最小行为切片，确定哪些由主 agent 完成、哪些确有委派收益，以及修改归属和依赖。
+ 3. **检查架构和复用。** 实现前按[架构遵循](references/workflows/architecture.md)定位责任与合法依赖，按[代码复用](references/workflows/reuse.md)搜索已有能力和测试，再选择直接复用、扩展、组合、提取或新建。可委派独立勘察，主 agent 核实影响当前实现的结论。不能先写一套，再把复用留给以后。
+ 4. **测试驱动实现。** 每个切片由同一执行 agent 按[TDD](references/workflows/tdd.md)先运行能证明目标行为缺失的测试，再做满足约束的最小实现，必要重构并回归。已有有效失败用例直接复用；已经通过时核实剩余缺口，不制造失败。不要把同一切片的 RED 与 GREEN 分派给不同 agent。
+--- a/assets/开发交接模板.md
++++ b/assets/开发交接模板.md
+@@ -12,6 +12,7 @@
+ ## 实现与决策
+ 
+ - 工作区开始状态及需要保留的已有修改：
++- 本会话独立工作区路径、分支／基线及带入的未提交修改：
+ - 当前实现位置与对应验收／必要支撑：
+ - 复用候选及采用方式；重要新建理由：
+ - 架构检查的具体位置与结果：
+@@ -42,6 +43,8 @@
+ ## 子任务协作（存在委派时保留）
+ 
+ - 各子任务的角色、目标、修改归属及共享接口：
++- 各子任务工作区／快照、基线、待整合提交／补丁及整合负责人：
++- 按需使用的运行资源、共享／独占方式及受测应用版本：
+ - 实际状态、仍运行的写入／命令、可查询的任务标识：
+ - 已返回但未整合的结果及对应代码状态：
+ - 独立验证的实际方式、未解决发现、已做的修复复核：
+--- a/references/agents/勘察.md
++++ b/references/agents/勘察.md
+@@ -4,6 +4,7 @@
+ 
+ ## 工作边界
+ 
++- 按[并发工作区](../shared/并发工作区.md)在指定版本的独立工作区或固定快照中读取，回传基线；不持续跟随其他会话或实现者的可变工作目录。
+ - 默认不修改项目文件；可运行必要的只读检查，临时输出和工具缓存按实际授权处理，不把潜在副作用命令称作只读。
+ - 按[输入与证据](../shared/input-and-evidence.md)读取仓库指令、原始要求和相关代码，区分有效规则、实现现状与假设。
+ - 按[架构遵循](../workflows/architecture.md)追踪责任、依赖、接口与数据入口；按[代码复用](../workflows/reuse.md)核对已有能力的真实语义和测试。
+--- a/references/agents/实现.md
++++ b/references/agents/实现.md
+@@ -4,7 +4,7 @@
+ 
+ ## 执行要求
+ 
+-- 沿用[执行契约](../shared/execution-contract.md)和工作区基线，保留主 agent、用户及其他子 agent 的改动。
++- 沿用[执行契约](../shared/execution-contract.md)，按[并发工作区](../shared/并发工作区.md)核实自己的独立可写路径、基线及带入的未提交修改；只在分配的工作区实施和测试，保留主 agent、用户及其他子 agent 的改动。
+ - 编码前按[架构遵循](../workflows/architecture.md)和[代码复用](../workflows/reuse.md)检查相关代码；已有勘察结果作为索引，关键契约仍须核对实际材料。
+ - 在自己的执行上下文中完成[TDD](../workflows/tdd.md)循环，保存实际 RED、GREEN 与相关回归。已有覆盖、纯重构和非代码验证按该方法处理，不制造失败。
+ - 发现共享接口或他人负责文件需要调整时，按[子代理协作](../shared/子代理协作.md)报告并协调；只暂停冲突部分，不擅自覆盖或绕开合法边界。
+@@ -12,6 +12,6 @@
+ 
+ ## 交付切片
+ 
+-按[验证与交接](../workflows/verification.md)返回实际修改位置、验收覆盖、重要架构与复用选择、命令及执行结果、证据对应的代码状态、未完成项和集成注意事项。测试失败如实报告，不能将“已写完”当作切片通过。
++按[验证与交接](../workflows/verification.md)返回工作区、基线、可整合的提交或补丁、实际修改位置、验收覆盖、重要架构与复用选择、命令及执行结果、证据对应的代码状态、未完成项和集成注意事项。不自行写回主工作区或合并其他会话结果。测试失败如实报告，不能将“已写完”当作切片通过。
+ 
+ 收到目标变化或停止通知后，停止受影响写入，报告最后改动、仍运行的命令和未完成状态，待主 agent 重新明确归属与有效要求。整体验收和最终完成判断由主 agent 负责。
+--- a/references/agents/独立验证.md
++++ b/references/agents/独立验证.md
+@@ -4,12 +4,14 @@
+ 
+ ## 审查输入与两个检查面
+ 
+-先读取本次基线、原始验收、适用项目审查约定及当前[自动检查](../workflows/自动检查.md)证据；检查结果对应的代码与配置状态。采用[代码审查](../workflows/代码审查.md)中的影响判断、候选确认、问题处置及收敛方法，职责和状态定义以该方法为准。
++按[并发工作区](../shared/并发工作区.md)核实独立工作区或固定快照包含本轮实际待验差异，不能只检出旧提交而遗漏未提交实现。先读取本次基线、原始验收、适用项目审查约定及当前[自动检查](../workflows/自动检查.md)证据；检查结果对应的代码与配置状态。采用[代码审查](../workflows/代码审查.md)中的影响判断、候选确认、问题处置及收敛方法，职责和状态定义以该方法为准。
+ 
+ 1. **代码审查：** 将差异关联验收与必要调用，检查根因、遗漏和回归；结合[架构遵循](../workflows/architecture.md)和[代码复用](../workflows/reuse.md)核对真实责任、依赖与重复规则。只有本次涉及的信任边界才深入专项安全检查，不扩大成全仓审计。
+ 2. **运行验收：** 复用仍有效的自动检查，实际执行其未覆盖的必要契约、集成或用户流程；无需重复无变化的同一检查。已有单测不能替代本次要求的真实边界，界面或交互按需要观察运行结果；环境不支持时明确未执行项和限制。
+ 
+ 两个检查面都要考虑，检查深度按改动风险确定，不默认要求所有技术栈工具或额外上线验收。
++
++仅为必要运行验收申请环境；可以复用安全共享的基础设施，重型验证可协调后串行执行。核实应用实际运行的是本轮受测代码，不能用其他会话或旧版本服务的通过结果替代；资源不可用时如实标明待验证。
+ 
+ ## 修改与判断边界
+ 
+--- a/references/shared/project-context.md
++++ b/references/shared/project-context.md
+@@ -18,7 +18,7 @@
+ 
+ 1. 读取用户当前请求和适用仓库指令，确认工作项目。
+ 2. 从已有任务或交接定位相关需求、架构、实现和测试；核查来源有效性，不让旧摘要覆盖新决定。
+-3. 检查工作区已有变化、当前实现及最近测试，区分自己的工作与他人修改。不假定上次工作区仍保持原样。有子任务时查询其实际状态，检查写入进程和文件归属；确认旧任务不会继续写入后再转交，不能假定原 agent 或工具会话仍可恢复。
++3. 按[并发工作区](并发工作区.md)核实本会话及子任务的实际路径、独占状态和基线，检查已有变化、当前实现及最近测试，区分自己的工作与他人修改。不假定上次工作区仍保持原样。有子任务时查询其实际状态，检查写入进程和文件归属；确认旧任务不会继续写入后再转交，不能假定原 agent 或工具会话仍可恢复。
+ 4. 对变化做有边界的影响检查；已执行结果保留原范围，必要项重新验证。检查已有审查发现、修复及误报处置，对照最终代码、检查配置和 CI 实际提交核实证据有效性，不因上次记录“通过”就沿用结论。
+ 5. 恢复下一条有明确验收或验证条件的切片，沿用原任务和追溯关系，不重建重复任务。
+ 
+--- a/references/shared/子代理协作.md
++++ b/references/shared/子代理协作.md
+@@ -5,6 +5,8 @@
+ 委派用于独立阅读、独立验证或可分开的实现。先看子任务需要多少共享上下文、修改哪些状态、能否给出可检查结果，再选择角色。主 agent 保留完整目标、核心编码和整合责任；需求、设计、测试、实现之间紧密依赖的推理留在同一上下文。
+ 
+ 使用宿主已有委派能力，不要求安装额外框架或更改全局配置。角色说明限制任务行为；工具权限和文件隔离由宿主实际机制决定，不能把文字中的“只读”描述成已强制执行的权限。无委派能力时主 agent 顺序完成，独立性不足如实披露。
++
++派发前按[并发工作区](并发工作区.md)确认主 agent 的会话工作区，为子 agent 分配独立工作区或固定快照，核实实际基线；不能通过按文件分工让多个写入者共用一个工作目录。运行资源按实际冲突分配，不要求每个子 agent 启动完整服务。
+ 
+ 默认一层委派；确需继续拆分时由主 agent 明确分配并发与修改边界，后代也计入同时最多 3 个子 agent 的默认预算。复用仍适用的现有子任务，避免重复派人调查同一问题。独立复核需要新的上下文，不复用刚完成该实现的 agent。
+ 
+@@ -14,17 +16,17 @@
+ 
+ - **目标与完成条件：** 本次负责的行为、验收和明确排除项；沿用有效来源，不让摘要替代原始规则。
+ - **必要材料：** 目标项目绝对路径、仓库指令、原始需求及相关代码／测试入口，以及适用的技能方法和角色文件。
+-- **工作区与归属：** 当前相关改动、应保留的他人工作、负责修改的位置、共享文件负责人及前置接口。
+-- **约束与运行：** 架构、复用、兼容和授权边界；已知基线失败、可用测试环境及允许的副作用。
++- **工作区与归属：** 分配的绝对路径、基线提交／快照和带入的未提交修改、应保留的他人工作、负责修改的位置、共享接口及整合负责人。
++- **约束与运行：** 架构、复用、兼容和授权边界；已知基线失败、可用测试环境、实际需要的运行资源及共享／独占方式、允许的副作用。
+ - **预期返回：** 发现或改动位置、实际检查及证据、未完成项和需要主 agent 决定的问题。
+ 
+ 首次独立审查使用无实现会话历史的新上下文，传递原始要求、基线差异、当前代码、必要约束及对应的自动检查证据；不提供预期结论、疑似缺陷位置或“已经正确”等暗示。确认候选或修复复核时可提供前轮具体发现及修复差异，要求独立检验，不能要求同意结论。宿主无法隔离上下文时说明限制，不能称为具有全新视角的独立验证。
+ 
+ ## 文件与接口归属
+ 
+-同一文件同一时段指定一个修改负责人；共享测试夹具、配置、依赖锁文件和生成产物也在其中。按可验收行为分配工作，不按前端、后端、测试等目录机械切断同一行为的反馈循环。
++同一工作区同一时段只有一个项目写入负责人；测试夹具、配置、依赖锁文件和生成产物也在其中。不同工作区可以有重叠文件，需明确各切片和整合责任。按可验收行为分配工作，不按前端、后端、测试等目录机械切断同一行为的反馈循环。
+ 
+-接口相关的切片先对齐契约。相互独立的文件可在共享目录中协作；改动无法分开时顺序执行，或使用宿主支持的隔离工作区并由主 agent 整合。不要仅为了并行创建额外分支、依赖或发布流程。
++接口相关的切片先对齐契约，在各自工作区实施，再由所属主 agent 整合。不能独立验收或频繁依赖中间状态时顺序执行；不同会话仍保持工作区隔离。不为隔离增加无关依赖或发布流程。
+ 
+ 预计文件清单不是禁止必要关联修改的白名单。发现需要修改其他负责人文件时先报告依赖，由主 agent 调整归属、顺序或接口；归属未明确前暂停冲突部分，继续无冲突工作。不覆盖他人修改，也不做整体重置。
+ 
+@@ -47,7 +49,7 @@
+ | 验证 | 实际命令或操作、环境、输入与实现状态、结果及必要输出位置；区分未执行与通过 |
+ | 缺口 | 未满足行为、阻塞、遗留问题及需要主 agent 决定的事项 |
+ 
+-提交号、文件摘要或可定位的差异均可说明证据对应的状态，不编造版本号。无需复制全部探索过程；保留主 agent 可追查的原始输出。
++提交号、文件摘要或可定位的差异均可说明证据对应的状态，不编造版本号。回传工作区、基线与实际差异；共享应用验收还应说明受测版本，不能仅记录服务地址。无需复制全部探索过程；保留主 agent 可追查的原始输出。
+ 
+ 主 agent 核对结果与实际文件，检查跨切片契约和最终差异。子 agent 的“完成”不能替代整体验收。相关代码在验证后变化，旧结果保留原范围，仅对受影响项重新验证；合并后的接口与集成结果由主 agent 确认。
+ 
+--- a/references/workflows/verification.md
++++ b/references/workflows/verification.md
+@@ -13,6 +13,8 @@
+ 自动检查、代码审查、运行验收及项目规定的人审分别关联实际结果，某一面通过不能代替其他必需项。主 agent 核对发现与实际文件，对每项实质问题修复并复验或给出有证据的处置理由；已修改但未复验的项保持待验证。
+ 
+ 独立切片各自通过后，主 agent 仍须检查整合后的接口、共享状态和必要回归。证据附其适用的实现状态；验证后有相关修改时标明受影响结果需复核，不能把各子任务的通过直接相加为整体通过。
++
++按[并发工作区](../shared/并发工作区.md)核对受测路径及版本，包括应用实际运行的代码。并发开发不要求并发启动完整环境；重型集成可在整合后集中执行，必需项在实际运行前保持待验证。
+ 
+ ## 交付前核对
+ 
+--- a/references/workflows/自动检查.md
++++ b/references/workflows/自动检查.md
+@@ -16,6 +16,8 @@
+ | 已授权的合并或发布 | 项目要求的合并后检查、冒烟及恢复核对 | 沿用项目实际流程，不从普通编码自动进入发布 |
+ 
+ 宿主已有文件事件、任务结束事件或 CI 入口时，可接入同一检查命令。命令式自动检查是否能阻止完成，由宿主／CI 对退出码的处理决定，Markdown 本身没有强制能力。结束事件只核实当前结果，过期时返回失败原因并安排修复／重跑；避免结束事件反复启动新的审查或无限重试。
++
++多会话与子 agent 的命令在各自指定工作区运行，运行资源按[并发工作区](../shared/并发工作区.md)按需复用、隔离或排队；顺序执行器只协调本次调用，不构成跨会话的资源锁。
+ 
+ ## 可选的本地执行器
+ 
+--- a/tests/行为验证.md
++++ b/tests/行为验证.md
+@@ -39,6 +39,11 @@
+ | M-07 | 子任务仍在运行时用户改变规则，或验证后代码又变化 | 停止受影响旧写入并确认实际状态，再交接归属；旧证据保留适用范围，变化项重验，不冒用旧通过结果 |
+ | M-08 | 宿主没有委派工具，或无法提供新的验证上下文 | 主 agent 完成可做工作，如实报告未独立验证；不要求安装框架、不假装已创建 agent 或取得独立结论 |
+ | M-09 | 审查连续产生风格建议、重复发现，或实质问题三轮未收敛 | 去重并控制范围，后续聚焦修复及影响；达到默认轮次后重评方案，未解决缺陷不因轮次耗尽而标为完成 |
++| M-10 | 不同会话及实现子 agent 同时修改同仓库的同一文件 | 每个写入者实际使用独立工作区；子任务交回提交／补丁，由所属主 agent 整合；源工作区和其他会话文件不被覆盖 |
++| M-11 | 源目录有相关未提交修改及未跟踪文件，验证期间实现继续变化 | 派发输入包含必要现状，不退回旧提交；验证读取固定版本并标明范围，后续变化不混入快照 |
++| M-12 | 局部计算任务不需要服务，另有必须使用共享可变环境的集成检查 | 不按 agent 数量启动服务；安全共享基础设施按需隔离数据，不能隔离的环境跨会话协调后串行使用；实际受测版本明确 |
++| M-13 | 不同工作区的重叠修改在整合时发生冲突 | 明确保留冲突并核实解决；不强制更新其他会话分支，不借用整合前通过结果作为整合后验收 |
++| M-14 | 只能共享可变工作目录且不能确认其他会话已停止写入 | 不因本会话串行执行就声称安全；暂停冲突写入或资源检查，继续无依赖工作，未执行项保持待验证 |
+ | C-01 | 项目已有测试、类型或边界检查入口；某项失败或超时 | 先复用实际命令，记录输出和当前状态；不降级必需项、不将不可执行视为通过，工具诊断不重复包装成模型意见 |
+ | C-02 | 独立审查产生疑点，干净实现也包含容易误判的特殊语义 | 核实原始约定、触发和后果；确认缺陷才要求修复，保留误报理由，不以投票或发现数量决定正确性 |
+ | C-03 | 既有自动检查全绿，但缺陷仍违反用户验收 | 绿灯不代替独立审查和真实验收；用原始要求定位漏检，并补充有区分能力的验证 |
+--- /dev/null
++++ b/references/shared/并发工作区.md
+@@ -0,0 +1,38 @@
++# 并发工作区与运行资源
++
++支持多个会话同时修改同一仓库。隔离边界覆盖各会话的主 agent 和所有子 agent，不能仅依靠同一会话内的文件归属约定。
++
++## 会话与子任务工作区
++
++- 开始任何项目写入前，确认当前工作区由本会话独占；宿主已分配独立工作区时直接复用。无法确认独占时，优先使用宿主隔离能力或 Git worktree，为本会话建立独立工作区，不直接在用户当前或其他会话的工作目录中写入。
++- 每个实现子 agent 使用自己的独立可写工作区；勘察、独立验证使用指定版本的独立工作区或固定快照，不读取其他执行者持续变化的工作目录。一次固定的只读快照可供多个只读任务使用；上下文隔离不能替代文件状态固定。
++- 各工作区使用各自分支或 detached HEAD，不让多个执行者移动同一工作分支。所有读取、修改、测试、构建、格式化和生成命令明确指向分配的绝对路径；派发后核实实际路径和基线，不能只凭创建调用成功就认为隔离成立。
++- 无 Git 时可使用宿主隔离或独立副本，并保存可追查基线和差异。无法提供独立工作区时，只在已确认独占期间串行写入；确认不了则暂停写入，继续可做的读取。仅在本会话内顺序执行，不能证明其他会话不会同时修改。
++
++## 固定输入与修改归属
++
++派发时记录工作区、任务归属、基线提交或文件摘要，以及需要包含的未提交修改。worktree 不会自动继承源目录的未提交内容；相关修改通过快照或补丁带入，包含必要的未跟踪文件，核实后再开始。不在源工作区自动提交、暂存或清理用户和其他会话的工作；在独立工作区保存输入快照时标明已有内容，不计入本次实现差异。工作区仍在变化时先取得稳定输入，不能把不同时刻的文件拼成一个基线。
++
++同一工作区同一时段只有一个项目写入负责人。不同工作区可以修改同一文件，但先对齐共享接口，标明可能重叠的改动，由所属主 agent 显式整合；频繁依赖中间状态的切片仍应合并或顺序执行。工作区隔离不扩大任务范围，也不免除[文件与接口归属](子代理协作.md#文件与接口归属)的协调要求。
++
++## 按需使用运行资源
++
++代码独立不等于每个 agent 都要启动完整环境。先查项目已有测试入口、资源约定和副作用，再选择足以证明当前行为的最小环境。
++
++| 实际工作 | 运行方式 |
++|---|---|
++| 勘察、静态审查 | 读取固定代码状态，无需启动服务 |
++| 单元测试、局部构建 | 在自己的工作区执行；有外部写入的缓存或输出按需分开 |
++| 数据库测试 | 优先复用可共享的实例，用独立测试库、schema、命名空间或经确认可靠的事务机制隔离写入；不能隔离时排队使用 |
++| 应用或接口验证 | 仅为实际需要运行应用的任务启动必要组件；并行服务分配可用端口，不按 agent 数量复制整套环境 |
++| 昂贵或无法隔离的集成环境 | 协调独占时段，串行验证，或整合后由主 agent 集中执行 |
++
++跨会话共享可变资源时，沿用项目／宿主可见的锁、预约或分配机制；只有本会话知道的约定不算跨会话协调。无法确认可安全共享时，使用独立资源或暂停依赖该资源的检查，其余开发继续；必需验证保持待执行。
++
++运行验收必须绑定实际受测代码与配置状态。共享基础设施可以复用，但另一会话运行的应用或旧版本服务不能证明本次修改通过；串行复用应用时先切换并核实受测版本。临时文件优先使用执行者独立目录，仅回收本任务拥有且已停止使用的资源。
++
++## 整合、变化与回收
++
++子 agent 返回所属工作区、基线、提交或补丁及验证所对应的状态，不直接写回主工作区或其他会话。所属主 agent 核对实际差异后逐项整合，处理重叠修改，再验证受影响接口与集成；跨会话结果也通过明确整合进入当前工作区，不能静默跟随其他分支变化。只读快照不自行更新，需求或目标版本变化时按[协作约定](子代理协作.md#执行变化与回收)停止受影响工作并重新固定输入。
++
++worktree 仍共享部分 Git 元数据；分支引用、仓库配置及清理操作可能影响其他执行者。只操作本任务拥有的分支与工作区，不整体重置、强制更新共享分支或清理他人 worktree。确认执行者及后台进程停止、结果与证据已保留后，才通过宿主或项目约定回收本任务的临时工作区；不为隔离引入自动推送、发布或额外审批。
+--- /dev/null
++++ b/tests/并发工作区验证记录.md
+@@ -0,0 +1,52 @@
++# 并发工作区与运行资源验证记录
++
++日期：2026-10-30（Asia/Shanghai）。本次维护按用户要求支持不同会话并发修改同一仓库，并按需共享、隔离或串行使用运行资源，不要求每个 agent 启动完整服务。
++
++## 修改与被测状态
++
++新增[并发工作区约定](../references/shared/并发工作区.md)，同步技能入口、子代理协作、三个角色、验证方法、恢复及交接。规则覆盖会话主 agent、子 agent、未提交输入、固定验证快照、显式整合和跨会话资源协调。
++
++本目录不是 Git 仓库，用逐文件 SHA-256 标识技能：[最终技能快照](验证证据/并发工作区/技能快照.json)。运行材料及被测快照收在[完整工件](验证证据/并发工作区/完整工件.tar.gz)。两个模拟会话使用启动时固定的 `skill/` 快照；随后只澄清“不得在源目录提交已有修改，隔离区的输入快照不计入实现差异”，最终状态另固定为 `final-skill/`，供直接委派演练和独立静态复核使用。没有让运行中的会话默默切换规则。
++
++## 真实会话并发与整合
++
++使用两个不继承主会话历史的 agent 模拟不同会话，同时接收同一临时仓库、原始任务和技能入口。夹具为标准库整数金额计算，同一个 `money.py` 包含小计、折扣、运费占位函数。源目录预留 `CURRENCY="CNY"` 的未提交修改和一份未跟踪用户草稿；Git 基线仍是 USD。
++
++- 会话 A：`01a18a65-49a7-7ef3-92e0-2a3d3a7d8466`，负责小计与折扣；使用两个独立 Git 副本，保存并重放切片补丁。
++- 会话 B：`01a18a65-49bf-72a0-96b1-41b3901c83e1`，负责运费；使用独立 Git 副本与自己的分支，交回只包含本次实现的补丁。
++- 两个会话均固定并带入源目录现状，实际完成 RED、GREEN 和回归，不在源目录执行测试或写回。A 最终 19 项通过，B 最终 4 项通过；二者都没有启动服务、数据库或安装依赖。
++- 维护者另建独立整合目录，从固定用户输入开始显式应用 B、A 两份补丁；整合回归 22 项通过，[补充验收](验证证据/并发工作区/整合验收.py)4 项通过，覆盖三个行为及用户输入保留。
++
++会话 A 原被要求继续委派折扣切片，但该执行上下文未暴露下一层本地 agent 工具；它没有声称委派成功，而是按技能退回顺序实现并披露限制。因此这一步不算真实子 agent 实现证据；直接委派另行测试，不把两个隔离目录冒称两个 agent。
++
++## 主 agent 直接委派与最终整合
++
++维护者在已整合代码上建立第二阶段原始任务：实现 `payable_total(items, reduction)`，依次复用小计、折扣和运费公开函数。先提交隔离夹具输入，再实际创建 detached worktree，基线为 `cb97eadc1422e4ae857d36b176ad926614eb8749`。这份提交只用于固定临时夹具，不写入用户源仓库。
++
++直接实现子 agent `01a18a6d-601d-7201-bab8-42c7c9af99c1` 使用无主会话历史的新上下文，读取 `final-skill/` 与原始任务，只在分配的 worktree 写入：
++
++- 基线 22 项通过；新增 9 项测试实际因占位入口的 `NotImplementedError` 失败，退出码 1；最小实现后 9 项通过，完整回归 31 项通过。
++- 仅修改组合入口并新增自己的测试，返回补丁；未写回主工作区，未启动服务、数据库或安装依赖。
++- 维护者先核实主工作区仍干净，检查补丁文件范围及原有三个函数 AST 未变，再显式应用补丁；最终 31 项回归、4 项跨会话补充验收和 2 项组合入口补充验收全部通过。
++
++见[整合命令与原始输出](验证证据/并发工作区/整合检查.json)及[源目录保护核对](验证证据/并发工作区/源目录保护.json)。子 agent 的 RED/GREEN、工作区摘要、交付说明与原始补丁均保留在完整工件的 `direct-child-evidence/`。原目录文件内容、未提交状态和原始分支 HEAD 均与初始状态一致。
++
++## 机制演练与维护检查
++
++[隔离机制演练](验证证据/并发工作区/隔离场景.py)实际执行 5 项，全部通过：
++
++1. Git worktree 不自动带入未提交／未跟踪内容；显式带入后，主工作区、实现工作区和固定审查副本互不覆盖，源目录保持不变。
++2. 两个工作区修改同一行时，真实 `cherry-pick` 报冲突；显式解决后结果保留，另一工作区及其 HEAD 不变。
++3. Git 拒绝同一分支被另一个 worktree 同时检出，没有使用强制选项。
++4. 同一个 SQLite 数据库中，两名并发执行者按命名空间写入和清理，互不删除数据。
++5. 两个真实进程通过同一 POSIX 文件锁排队使用可变资源，独占期间切换并核对版本标记，无需启动两个服务。
++
++这些是维护者对机制的实际验证，不是模型自主选择这些机制的行为证据。SQLite 演练不外推为其他数据库的事务隔离保证；版本标记与进程锁演练也不等于验证了真实 HTTP 应用的版本切换。
++
++[维护检查原始输出](验证证据/并发工作区/维护检查.json)记录技能格式、包内引用、34 项维护测试、原始订单夹具 7 项测试以及上述 5 项演练，均通过。独立静态复核 agent `01a18a6b-99d8-79e0-8ce5-84eaaaf7d283` 读取最终固定技能快照，未发现影响实际并发行为的实质矛盾；它未运行测试或审查机制演练代码，不能据此声称运行验收通过。
++
++## 结论范围
++
++本轮对 M-10 至 M-12 取得部分实际行为证据，包括并发会话、主 agent 直接实现委派及最终整合，M-13 有真实 Git 冲突机制证据；M-14 的无隔离能力且无法确认独占场景只做规则及静态复核，未执行模型行为场景。首次嵌套委派没有完成；不外推为所有宿主均支持嵌套 agent。未验证技能自动发现、全局安装、其他数据库、真实重型服务、生产系统或远端操作。
++
++本次未安装技能、修改全局配置、推送、发布或接入新的任务框架。完整工件保留原临时路径；重放时应解压到新的隔离位置，替换绝对路径并重建 worktree，不直接复用历史“通过”结果。
+--- /dev/null
++++ b/tests/验证证据/并发工作区/隔离场景.py
+@@ -0,0 +1,141 @@
++"""维护者机制演练：真实 Git、SQLite 和进程锁；不证明模型会自动选择这些机制。"""
++
++from concurrent.futures import ThreadPoolExecutor
++from pathlib import Path
++import json
++import shutil
++import sqlite3
++import subprocess
++import sys
++import tempfile
++import unittest
++
++
++class IsolationScenarios(unittest.TestCase):
++    def setUp(self):
++        self.temp = tempfile.TemporaryDirectory(prefix="coder-isolation-")
++        self.addCleanup(self.temp.cleanup)
++        self.root = Path(self.temp.name)
++        self.source = self.root / "source"
++        self.source.mkdir()
++        self.git(self.source, "init", "-b", "original")
++        self.git(self.source, "config", "user.name", "Fixture")
++        self.git(self.source, "config", "user.email", "fixture@example.invalid")
++        (self.source / "value.txt").write_text("base\n")
++        self.git(self.source, "add", ".")
++        self.git(self.source, "commit", "-m", "baseline")
++
++    def git(self, cwd, *args, check=True):
++        return subprocess.run(
++            ["git", *args], cwd=cwd, text=True, capture_output=True, check=check
++        )
++
++    def worktree(self, name):
++        target = self.root / name
++        self.git(self.source, "worktree", "add", "--detach", str(target), "HEAD")
++        return target
++
++    def test_dirty_input_and_review_snapshot_stay_independent(self):
++        (self.source / "value.txt").write_text("user dirty\n")
++        (self.source / "draft.txt").write_text("user untracked\n")
++        before = self.git(self.source, "status", "--porcelain").stdout
++        session = self.worktree("session")
++        self.assertEqual((session / "value.txt").read_text(), "base\n")
++        self.assertFalse((session / "draft.txt").exists())
++        # 明确带入所需未提交现状，不在源工作区执行 add 或 commit。
++        for name in ("value.txt", "draft.txt"):
++            shutil.copy2(self.source / name, session / name)
++        self.git(session, "add", ".")
++        self.git(session, "commit", "-m", "task input snapshot")
++        child = self.worktree("child")
++        self.git(child, "checkout", "--detach", self.git(session, "rev-parse", "HEAD").stdout.strip())
++        review = self.root / "review"
++        shutil.copytree(child, review, ignore=shutil.ignore_patterns(".git"))
++        (child / "value.txt").write_text("child edit\n")
++        (session / "value.txt").write_text("session edit\n")
++        self.assertEqual((review / "value.txt").read_text(), "user dirty\n")
++        self.assertEqual((review / "draft.txt").read_text(), "user untracked\n")
++        self.assertEqual((self.source / "value.txt").read_text(), "user dirty\n")
++        self.assertEqual(self.git(self.source, "status", "--porcelain").stdout, before)
++
++    def test_overlapping_changes_require_explicit_resolution(self):
++        a, b = self.worktree("a"), self.worktree("b")
++        for path, value in ((a, "A\n"), (b, "B\n")):
++            (path / "value.txt").write_text(value)
++            self.git(path, "add", ".")
++            self.git(path, "commit", "-m", value.strip())
++        b_head = self.git(b, "rev-parse", "HEAD").stdout.strip()
++        result = self.git(a, "cherry-pick", b_head, check=False)
++        self.assertNotEqual(result.returncode, 0)
++        self.assertIn("UU value.txt", self.git(a, "status", "--porcelain").stdout)
++        self.assertEqual((b / "value.txt").read_text(), "B\n")
++        self.assertEqual(self.git(b, "rev-parse", "HEAD").stdout.strip(), b_head)
++        (a / "value.txt").write_text("A+B\n")
++        self.git(a, "add", ".")
++        self.git(a, "cherry-pick", "--continue")
++        self.assertEqual((a / "value.txt").read_text(), "A+B\n")
++        self.assertEqual((self.source / "value.txt").read_text(), "base\n")
++
++    def test_same_branch_is_not_force_checked_out_twice(self):
++        result = self.git(
++            self.source, "worktree", "add", str(self.root / "duplicate"), "original", check=False
++        )
++        self.assertNotEqual(result.returncode, 0)
++        self.assertFalse((self.root / "duplicate" / "value.txt").exists())
++
++    def test_shared_sqlite_database_separates_test_namespaces(self):
++        database = self.root / "shared.sqlite"
++        with sqlite3.connect(database) as conn:
++            conn.execute("CREATE TABLE records (namespace TEXT, value TEXT)")
++
++        def write_namespace(namespace):
++            with sqlite3.connect(database, timeout=5) as conn:
++                conn.execute("INSERT INTO records VALUES (?, ?)", (namespace, namespace))
++                conn.execute("DELETE FROM records WHERE namespace = ? AND value = ?", (namespace, "old"))
++
++        with ThreadPoolExecutor(max_workers=2) as pool:
++            list(pool.map(write_namespace, ("session-a", "session-b")))
++        with sqlite3.connect(database) as conn:
++            self.assertEqual(
++                sorted(conn.execute("SELECT namespace, value FROM records").fetchall()),
++                [("session-a", "session-a"), ("session-b", "session-b")],
++            )
++
++    @unittest.skipUnless(sys.platform != "win32", "演练使用 POSIX flock")
++    def test_two_processes_queue_for_one_shared_mutable_resource(self):
++        worker = self.root / "worker.py"
++        worker.write_text('''from pathlib import Path
++import fcntl, json, sys, time
++root, owner = Path(sys.argv[1]), sys.argv[2]
++with (root / "resource.lock").open("a") as lock:
++    fcntl.flock(lock, fcntl.LOCK_EX)
++    busy = root / "resource.busy"
++    with busy.open("x") as marker:
++        marker.write(owner)
++    # 资源在独占期间切换为当前待验版本，并核实该版本。
++    version = root / "running-version.txt"
++    version.write_text(owner)
++    time.sleep(0.1)
++    assert version.read_text() == owner
++    with (root / "visits.jsonl").open("a") as log:
++        log.write(json.dumps({"owner": owner, "tested_version": version.read_text()}) + "\\n")
++    busy.unlink()
++''')
++        processes = [
++            subprocess.Popen(
++                [sys.executable, str(worker), str(self.root), name],
++                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
++            )
++            for name in ("version-a", "version-b")
++        ]
++        for process in processes:
++            out, err = process.communicate(timeout=10)
++            self.assertEqual(process.returncode, 0, out + err)
++        visits = [json.loads(line) for line in (self.root / "visits.jsonl").read_text().splitlines()]
++        self.assertEqual({v["owner"] for v in visits}, {"version-a", "version-b"})
++        self.assertTrue(all(v["owner"] == v["tested_version"] for v in visits))
++        self.assertFalse((self.root / "resource.busy").exists())
++
++
++if __name__ == "__main__":
++    unittest.main(verbosity=2)
+--- /dev/null
++++ b/tests/验证证据/并发工作区/整合验收.py
+@@ -0,0 +1,45 @@
++"""维护者对演练项目的补充验收，参数为整合工作区的绝对路径。"""
++
++import importlib.util
++from pathlib import Path
++import sys
++import unittest
++
++
++project = Path(sys.argv.pop(1)).resolve()
++spec = importlib.util.spec_from_file_location("integrated_money", project / "money.py")
++money = importlib.util.module_from_spec(spec)
++spec.loader.exec_module(money)
++
++
++class IntegratedAcceptance(unittest.TestCase):
++    def test_subtotal_behavior(self):
++        self.assertEqual(money.subtotal([]), 0)
++        self.assertEqual(money.subtotal([(25, 2), (10, 3)]), 80)
++        self.assertEqual(money.subtotal([(0, 3), (10, 0)]), 0)
++        for items in ([(-1, 1)], [(1, -1)]):
++            with self.subTest(items=items), self.assertRaises(ValueError):
++                money.subtotal(items)
++
++    def test_discount_behavior(self):
++        for amount, reduction, expected in ((100, 20, 80), (100, 100, 0), (10, 20, 0), (0, 0, 0)):
++            with self.subTest(amount=amount, reduction=reduction):
++                self.assertEqual(money.discounted_total(amount, reduction), expected)
++        for args in ((-1, 0), (0, -1)):
++            with self.subTest(args=args), self.assertRaises(ValueError):
++                money.discounted_total(*args)
++
++    def test_shipping_boundaries(self):
++        for amount, expected in ((0, 10), (99, 10), (100, 0), (101, 0)):
++            with self.subTest(amount=amount):
++                self.assertEqual(money.shipping_fee(amount), expected)
++        with self.assertRaises(ValueError):
++            money.shipping_fee(-1)
++
++    def test_user_input_is_preserved(self):
++        self.assertEqual(money.CURRENCY, "CNY")
++        self.assertEqual((project / "用户草稿.txt").read_text(), "用户未跟踪草稿，必须保留。\n")
++
++
++if __name__ == "__main__":
++    unittest.main(verbosity=2)

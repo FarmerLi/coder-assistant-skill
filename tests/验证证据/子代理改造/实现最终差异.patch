@@ -1,0 +1,112 @@
+--- baseline/order_app/api.py
++++ final/order_app/api.py
+@@ -6,4 +6,5 @@
+         self.service = service
+ 
+     def cancel_order(self, order_id: str, actor_id: str) -> dict:
+-        raise NotImplementedError("取消入口尚未接入")
++        order = self.service.cancel(order_id, actor_id)
++        return {"id": order.id, "status": order.status}
+--- baseline/tests/test_api.py
++++ final/tests/test_api.py
+@@ -0,0 +1,100 @@
++from pathlib import Path
++import sys
++import unittest
++from unittest.mock import Mock
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++
++from order_app.api import OrderAPI
++from order_app.domain import Order
++from order_app.services import OrderService
++from order_app.store import MemoryOrderStore
++
++
++class OrderAPITests(unittest.TestCase):
++    def setUp(self):
++        self.original_orders = {
++            "A1": Order("A1", "alice"),
++            "S1": Order("S1", "alice", "shipped"),
++            "C1": Order("C1", "alice", "cancelled"),
++        }
++        self.store = MemoryOrderStore(self.original_orders.values())
++        self.api = OrderAPI(OrderService(self.store))
++
++    def assert_orders_unchanged(self):
++        self.assertEqual(
++            {order_id: self.store.get(order_id) for order_id in self.original_orders},
++            self.original_orders,
++        )
++        self.assertEqual(self.store.save_count, 0)
++
++    def test_owner_cancels_open_order(self):
++        self.assertEqual(
++            self.api.cancel_order("A1", "alice"),
++            {"id": "A1", "status": "cancelled"},
++        )
++        self.assertEqual(self.store.get("A1"), Order("A1", "alice", "cancelled"))
++        self.assertEqual(self.store.get("S1"), self.original_orders["S1"])
++        self.assertEqual(self.store.get("C1"), self.original_orders["C1"])
++        self.assertEqual(self.store.save_count, 1)
++
++    def test_repeat_cancel_returns_same_result_without_second_write(self):
++        first = self.api.cancel_order("A1", "alice")
++        second = self.api.cancel_order("A1", "alice")
++        self.assertEqual(first, {"id": "A1", "status": "cancelled"})
++        self.assertEqual(second, first)
++        self.assertEqual(self.store.get("A1"), Order("A1", "alice", "cancelled"))
++        self.assertEqual(self.store.save_count, 1)
++
++    def test_already_cancelled_order_returns_result_without_write(self):
++        self.assertEqual(
++            self.api.cancel_order("C1", "alice"),
++            {"id": "C1", "status": "cancelled"},
++        )
++        self.assert_orders_unchanged()
++
++    def test_stranger_is_rejected_without_changing_data(self):
++        with self.assertRaises(PermissionError):
++            self.api.cancel_order("A1", "bob")
++        self.assert_orders_unchanged()
++
++    def test_stranger_cannot_repeat_cancel_another_owners_order(self):
++        with self.assertRaises(PermissionError):
++            self.api.cancel_order("C1", "bob")
++        self.assert_orders_unchanged()
++
++    def test_shipped_order_is_rejected_without_changing_data(self):
++        with self.assertRaises(ValueError):
++            self.api.cancel_order("S1", "alice")
++        self.assert_orders_unchanged()
++
++    def test_missing_order_is_rejected_without_changing_data(self):
++        with self.assertRaises(KeyError):
++            self.api.cancel_order("missing", "alice")
++        self.assert_orders_unchanged()
++
++    def test_order_id_lookup_remains_case_sensitive(self):
++        with self.assertRaises(KeyError):
++            self.api.cancel_order("a1", "alice")
++        self.assert_orders_unchanged()
++
++    def test_case_distinct_order_ids_target_the_requested_order(self):
++        store = MemoryOrderStore([Order("Xy", "alice"), Order("xy", "alice")])
++        api = OrderAPI(OrderService(store))
++        self.assertEqual(api.cancel_order("xy", "alice"), {"id": "xy", "status": "cancelled"})
++        self.assertEqual(store.get("Xy"), Order("Xy", "alice"))
++        self.assertEqual(store.get("xy"), Order("xy", "alice", "cancelled"))
++        self.assertEqual(store.save_count, 1)
++
++    def test_api_forwards_arguments_to_the_public_service(self):
++        service = Mock(spec_set=["cancel"])
++        service.cancel.return_value = Order("A1", "alice", "cancelled")
++        self.assertEqual(
++            OrderAPI(service).cancel_order("A1", "alice"),
++            {"id": "A1", "status": "cancelled"},
++        )
++        service.cancel.assert_called_once_with("A1", "alice")
++
++
++if __name__ == "__main__":
++    unittest.main()

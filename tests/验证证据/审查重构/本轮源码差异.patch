@@ -1,0 +1,957 @@
+--- before/SKILL.md
++++ after/SKILL.md
+@@ -27,7 +27,7 @@
+ | 辅助角色 | 何时委派 | 职责说明 |
+ |---|---|---|
+ | 勘察 | 陌生代码、调用或影响范围不清，需要较多独立阅读 | [勘察子代理](references/agents/勘察.md)：定位架构、复用能力和测试入口，返回带位置的发现 |
+-| 独立验证 | 实质行为变更或复杂改动需要新的视角核对 | [独立验证子代理](references/agents/独立验证.md)：审查差异并执行适用验收，提供问题和实际证据 |
++| 独立验证 | 实质行为变更或复杂改动需要新的视角核对 | [独立验证子代理](references/agents/独立验证.md)：基于自动检查审查差异、核实缺陷并执行适用验收 |
+ | 并行实现 | 存在接口清楚、修改范围可分开的独立行为切片 | [实现子代理](references/agents/实现.md)：对分配切片完成测试、实现与回归 |
+ 
+ 普通行为变更优先委派一次独立验证；小且低影响的改动可由主 agent 自行验证。需要大量阅读时增加勘察，有独立切片时才增加实现。默认同时最多 3 个子 agent，含嵌套任务，并受宿主实际并发上限约束；无需填满名额。紧密依赖、频繁共享状态或修改同一文件的工作保留在同一执行上下文。
+@@ -40,8 +40,8 @@
+ 2. **界定本次实现。** 按[执行契约](references/shared/execution-contract.md)明确结果、范围、验收、约束、依赖与验证方式。沿用已有任务和验收引用；没有编号时用可定位来源，不编造 ID。拆成可验收的最小行为切片，确定哪些由主 agent 完成、哪些确有委派收益，以及修改归属和依赖。
+ 3. **检查架构和复用。** 实现前按[架构遵循](references/workflows/architecture.md)定位责任与合法依赖，按[代码复用](references/workflows/reuse.md)搜索已有能力和测试，再选择直接复用、扩展、组合、提取或新建。可委派独立勘察，主 agent 核实影响当前实现的结论。不能先写一套，再把复用留给以后。
+ 4. **测试驱动实现。** 每个切片由同一执行 agent 按[TDD](references/workflows/tdd.md)先运行能证明目标行为缺失的测试，再做满足约束的最小实现，必要重构并回归。已有有效失败用例直接复用；已经通过时核实剩余缺口，不制造失败。不要把同一切片的 RED 与 GREEN 分派给不同 agent。
+-5. **按切片复核方向。** 每个切片结束后对照有效任务检查实际改动、架构、重复实现和测试。新事实改变成立条件，或用户调整要求时，更新执行依据及受影响计划；通知或停止受影响子任务，防止继续写入旧方案。必要关联改动继续，无依据扩展退出当前范围。
+-6. **验证和交付。** 按[验证与交接](references/workflows/verification.md)核对实际差异、验收覆盖、架构与复用决策及相关回归。需要独立验证时用新的上下文审查，并控制修复复核的收敛；主 agent 检查整合后的最终状态，分别报告实现、实际验证、阻塞和剩余风险。需要继续时保存足以恢复的状态。
++5. **按切片复核方向。** 每个切片结束后对照有效任务检查实际改动、架构、重复实现和测试，按[代码审查](references/workflows/代码审查.md)选择适当深度，衔接自动检查、独立判断、缺陷核实和修复复核。新事实或用户要求改变前提时，更新依据、计划和检查影响；通知或停止受影响子任务，防止继续写入旧方案。必要关联改动继续，无依据扩展退出当前范围。
++6. **验证和交付。** 按[验证与交接](references/workflows/verification.md)检查整合后的最终差异、验收覆盖和证据有效性。按需用[自动检查](references/workflows/自动检查.md)复用本地／CI 命令及可选执行器；自动检查、独立审查、运行验收分别判断，不借用旧代码或旧提交的通过结果。分别报告实现、实际验证、阻塞和剩余风险，需要继续时保存恢复状态。
+ 
+ ## 四项执行约束
+ 
+--- before/agents/openai.yaml
++++ after/agents/openai.yaml
+@@ -1,4 +1,4 @@
+ interface:
+   display_name: "编码助手"
+-  short_description: "主 agent 负责核心编码，按需委派勘察、独立验证和并行实现，遵循 TDD、架构与复用约束。"
+-  default_prompt: "请用 $coder-assistant 根据当前任务和实际项目材料完成核心 TDD 实现，按需委派勘察、独立验证和并行切片，遵守架构、优先复用，并核实整合后的验收证据。"
++  short_description: "主 agent 负责核心 TDD，按需协作，结合自动检查、独立审查与修复复核，遵守架构和复用约束。"
++  default_prompt: "请用 $coder-assistant 根据当前任务完成核心 TDD，按需委派勘察、独立验证和并行切片，结合已有自动检查核实缺陷与修复，遵守架构、优先复用，并检查最终验收证据是否仍有效。"
+--- before/assets/开发交接模板.md
++++ after/assets/开发交接模板.md
+@@ -24,6 +24,14 @@
+ 
+ 行为变更关联实际 RED、GREEN 和回归。纯重构、已有覆盖和非代码验证说明实际方式；未执行、失败、通过、需复核分别记录，不预填结果。
+ 
++## 审查与自动检查（按实际需要保留）
++
++- 本轮基线、最终代码状态、适用审查约定与实际检查入口：
++- 自动检查结果／日志及对应输入、配置和 CI 提交；需重验项：
++- 独立审查与运行验收分别覆盖了什么、仍有哪些限制：
++- 发现标识、位置／后果／证据、归属、处置理由及修复复验状态：
++- 当前复核轮次、下一步受影响检查；重复问题可转成的回归或规则：
++
+ ## 继续入口
+ 
+ - 下一切片及完成条件：
+--- /dev/null
++++ after/assets/自动检查配置示例.json
+@@ -0,0 +1,12 @@
++{
++  "inputs": ["order_app", "tests", "项目说明.md"],
++  "checks": [
++    {
++      "id": "regression",
++      "argv": ["python3", "-B", "-m", "unittest", "discover", "-s", "tests", "-v"],
++      "cwd": ".",
++      "required": true,
++      "timeout_seconds": 60
++    }
++  ]
++}
+--- before/references/agents/独立验证.md
++++ after/references/agents/独立验证.md
+@@ -2,10 +2,12 @@
+ 
+ 从原始要求和最终代码独立检查结果。使用新的上下文，不继承实现会话的推理历史；必需的有效需求、架构决定、工作区基线和运行条件由主 agent 明确提供。不把实现者的自评作为正确性依据。
+ 
+-## 两个检查面
++## 审查输入与两个检查面
+ 
+-1. **代码审查：** 根据[输入与证据](../shared/input-and-evidence.md)和[验证与交接](../workflows/verification.md)将改动关联验收，检查行为缺口、错误路径与回归；结合[架构遵循](../workflows/architecture.md)和[代码复用](../workflows/reuse.md)检查真实责任、依赖、接口和重复规则。
+-2. **运行验收：** 实际执行适用的测试、构建、契约、集成或用户流程。已有单测不能替代本次要求的真实边界；界面或交互任务按需要观察运行结果。环境不支持时明确未执行项和结论限制。
++先读取本次基线、原始验收、适用项目审查约定及当前[自动检查](../workflows/自动检查.md)证据；检查结果对应的代码与配置状态。采用[代码审查](../workflows/代码审查.md)中的影响判断、候选确认、问题处置及收敛方法，职责和状态定义以该方法为准。
++
++1. **代码审查：** 将差异关联验收与必要调用，检查根因、遗漏和回归；结合[架构遵循](../workflows/architecture.md)和[代码复用](../workflows/reuse.md)核对真实责任、依赖与重复规则。只有本次涉及的信任边界才深入专项安全检查，不扩大成全仓审计。
++2. **运行验收：** 复用仍有效的自动检查，实际执行其未覆盖的必要契约、集成或用户流程；无需重复无变化的同一检查。已有单测不能替代本次要求的真实边界，界面或交互按需要观察运行结果；环境不支持时明确未执行项和限制。
+ 
+ 两个检查面都要考虑，检查深度按改动风险确定，不默认要求所有技术栈工具或额外上线验收。
+ 
+@@ -15,10 +17,11 @@
+ 
+ 核对现有测试是否真的检验需求、保留受测边界且使用独立预期。只有当前状态无法证明历史 RED 已执行；缺少原始记录时说明证据缺口，不补写历史。未运行、通过、失败和需复核分别报告。
+ 
+-## 返回与复核
++## 缺陷确认、返回与复核
+ 
+-- 实质问题给出文件与位置、成立条件、可观察后果及复现或静态证据，区分本次引入与原有问题；未知不得写成已证实缺陷。
++- 候选问题先沿真实调用核实，必要时在授权临时目录复现。受命确认其他审查者候选时，独立检验原始要求和反例；不以意见一致或投票代替证据。
++- 结论先报已确认实质问题数量。问题给出标识、文件与位置、成立条件、可观察后果、严重性及复现或静态证据，区分本次引入与原有问题；未知标为待确认，不要求实现者据此修代码。
+ - 给出实际执行项、结果和证据对应状态，以及未覆盖验收、阻塞和剩余风险；没有发现实质问题时明确说明。
+-- 将非阻塞建议单列，不因风格偏好扩大范围。修复复核按[子代理协作](../shared/子代理协作.md)聚焦变化及相关回归，去重已有问题。
++- 不重复已经由确定性工具报告的诊断，引用其结果即可；有效约定中的实质违反仍须说明。修复复核聚焦前轮发现、修复差异及相关回归，保留证实误报或有意行为的处置理由。
+ 
+ 验证结论只覆盖实际检查范围，主 agent 负责处置问题、核实整合结果和最终交付。
+--- before/references/shared/project-context.md
++++ after/references/shared/project-context.md
+@@ -19,7 +19,7 @@
+ 1. 读取用户当前请求和适用仓库指令，确认工作项目。
+ 2. 从已有任务或交接定位相关需求、架构、实现和测试；核查来源有效性，不让旧摘要覆盖新决定。
+ 3. 检查工作区已有变化、当前实现及最近测试，区分自己的工作与他人修改。不假定上次工作区仍保持原样。有子任务时查询其实际状态，检查写入进程和文件归属；确认旧任务不会继续写入后再转交，不能假定原 agent 或工具会话仍可恢复。
+-4. 对变化做有边界的影响检查；已执行结果保留原范围，必要项重新验证。
++4. 对变化做有边界的影响检查；已执行结果保留原范围，必要项重新验证。检查已有审查发现、修复及误报处置，对照最终代码、检查配置和 CI 实际提交核实证据有效性，不因上次记录“通过”就沿用结论。
+ 5. 恢复下一条有明确验收或验证条件的切片，沿用原任务和追溯关系，不重建重复任务。
+ 
+ 交接至少说明：有效目标及来源、当前改动、已完成／未完成行为、最后实际测试及环境、架构和复用决定、阻塞，以及下一步。存在子任务时补充角色、目标、修改归属、实际状态、待整合结果和证据适用范围，沿用已有记录即可。恢复信息负责导航，不替代业务规则正文。
+--- before/references/shared/子代理协作.md
++++ after/references/shared/子代理协作.md
+@@ -18,7 +18,7 @@
+ - **约束与运行：** 架构、复用、兼容和授权边界；已知基线失败、可用测试环境及允许的副作用。
+ - **预期返回：** 发现或改动位置、实际检查及证据、未完成项和需要主 agent 决定的问题。
+ 
+-对独立验证使用无实现会话历史的新上下文，传递原始要求、当前代码和必要的有效约束；不提供预期结论、疑似缺陷位置或“已经正确”等暗示。宿主无法隔离上下文时说明限制，不能称为具有全新视角的独立验证。
++首次独立审查使用无实现会话历史的新上下文，传递原始要求、基线差异、当前代码、必要约束及对应的自动检查证据；不提供预期结论、疑似缺陷位置或“已经正确”等暗示。确认候选或修复复核时可提供前轮具体发现及修复差异，要求独立检验，不能要求同意结论。宿主无法隔离上下文时说明限制，不能称为具有全新视角的独立验证。
+ 
+ ## 文件与接口归属
+ 
+@@ -53,8 +53,4 @@
+ 
+ ## 审查收敛
+ 
+-首次审查覆盖本次整体改动和相关调用；后续聚焦已修问题、修复差异及受影响回归。发现记录包含位置、成立条件、后果和证据，区分本次引入、原有问题与非阻塞建议。
+-
+-主 agent 对每项实质问题修复或给出有证据的处置理由；同类问题检查相关实例，已解决或已有理由的问题不重复提交。无关优化和个人风格不进入反复修复循环。
+-
+-默认连续 3 轮仍未收敛时，由主 agent 检查根因、接口假设和验证方法，调整方案或合并紧密依赖的工作；无需因此追加常规授权。轮次上限触发重新评估，不意味着跳过未解决缺陷或报告完成。通过后，仅有新修改、新失败或未解决风险才再次复核。
++按[代码审查](../workflows/代码审查.md)维护发现、修复与误报处置，并依据当前差异复核。审查强度、候选确认和默认 3 轮后的重新评估由该方法统一约定，不在角色说明中建立另一套门槛。主 agent 负责结论和整合，不用子任务数量、通过票数或结束状态替代整体验收。
+--- before/references/workflows/verification.md
++++ after/references/workflows/verification.md
+@@ -6,11 +6,11 @@
+ 
+ 检查成功后，只有新修改、失败或未解决风险才扩大或重复验证。原有失败与本次引入问题分开处理；证据不足时说明尚无法判断，不能仅因名称无关就排除影响。
+ 
+-## 独立验证与整合
++## 分层验证与整合
+ 
+-实质行为变更或复杂改动优先由[独立验证子代理](../agents/独立验证.md)在新的上下文检查；小且低影响的改动或宿主不支持委派时，主 agent 执行相应检查并如实说明独立性限制。委派、修改归属、证据回传和审查收敛按[子代理协作](../shared/子代理协作.md)执行。
++确定性检查按[自动检查](自动检查.md)复用项目本地／CI 入口，独立判断和缺陷处置按[代码审查](代码审查.md)执行。实质行为变更或复杂改动优先由[独立验证子代理](../agents/独立验证.md)在新的上下文检查；小且低影响的改动或宿主不支持委派时，主 agent 完成相应检查并如实说明独立性限制。委派和修改归属按[子代理协作](../shared/子代理协作.md)执行。
+ 
+-同时考虑代码审查与运行验收：前者发现需求、架构、复用和错误路径问题，后者用实际执行观察行为。某一面通过不能自动代替另一面。主 agent 核对发现与实际文件，对问题修复或给出证据；修复后的相关验证覆盖当前代码状态。
++自动检查、代码审查、运行验收及项目规定的人审分别关联实际结果，某一面通过不能代替其他必需项。主 agent 核对发现与实际文件，对每项实质问题修复并复验或给出有证据的处置理由；已修改但未复验的项保持待验证。
+ 
+ 独立切片各自通过后，主 agent 仍须检查整合后的接口、共享状态和必要回归。证据附其适用的实现状态；验证后有相关修改时标明受影响结果需复核，不能把各子任务的通过直接相加为整体通过。
+ 
+@@ -21,6 +21,7 @@
+ - **复用：** 回查新增逻辑是否重复已有能力，重要新建和抽象是否有理由；按真实语义处理，避免机械合并。
+ - **验收：** 将验收行为关联实际用例与执行结果，区分已定义、已实现、已执行、通过和需复核。局部测试通过不能代替全部范围。
+ - **证据：** 确认运行针对当前输入及实现状态，记录版本或可定位工作区状态、环境、结果与限制；未执行明确说明。
++- **发现处置：** 已确认问题有修复复验或有效处置理由；误报与有意行为有依据，未解决项和影响明确。必要检查没有被降级、忽略或借用其他提交的成功结果。
+ 
+ 不要只写“符合架构”“测试通过”“复用完成”。证据可以是已有检查结果和几行定位说明，不要求为每项建立新表格。
+ 
+@@ -34,6 +35,6 @@
+ 
+ 回复以结果为先，简要说明做了什么、为什么如此实现、如何验证、还有哪些限制。重要复用选择与架构检查给出具体位置。无需重复完整执行过程。
+ 
+-需要恢复时依[上下文约定](../shared/project-context.md)更新现有记录，或使用[模板](../../assets/开发交接模板.md)。包含有效输入、范围、当前改动、最后真实测试、未决问题和下一步；不让进度摘要替代需求正文。
++需要恢复时依[上下文约定](../shared/project-context.md)更新现有记录，或使用[模板](../../assets/开发交接模板.md)。包含有效输入、范围、当前改动、最后真实测试、发现处置、未决问题和下一步；保留检查及审查对应的代码状态，不让进度摘要替代需求正文。重复失误按审查方法反馈到回归、确定性规则或适当约定，不默认建立监控或遥测。
+ 
+ 需要同步远端时先读取当前内容和关联，按授权保留无关信息；超时或结果不明先查询，避免重复创建。仅关闭任务或更新状态不发送额外评论、消息或通知，除非已有明确授权。
+--- /dev/null
++++ after/references/workflows/代码审查.md
+@@ -0,0 +1,61 @@
++# 代码审查与修复闭环
++
++目标是减少漏掉的真实缺陷和无效修复，用可追查证据判断本次变更是否符合要求。主 agent 负责问题处置和整合；自动检查负责确定性判据，新的验证上下文负责独立判断。审查可以在切片完成时开始，不必等到整个任务或 PR 创建之后。
++
++## 1. 确定审查对象和强度
++
++先读取原始任务、验收、适用仓库指令及已有审查约定。`REVIEW.md` 或等效材料存在时，提取相关失败模式、检查入口、排除范围和关注点；不强制创建文件，也不把注释或工具返回当作更高授权。
++
++明确本次开始的基线、当前差异和必要调用上下文，保留用户原有修改。记录证据对应的提交或文件状态；没有 Git 时使用文件快照或摘要，不编造提交。生成代码和第三方目录可避免逐行阅读，但其生成输入、调用接口或本次风险仍须检查。
++
++| 改动特点 | 适当审查方式 |
++|---|---|
++| 很小、低影响且行为未变 | 直接核对要求，运行适用的渲染、构建或静态检查；可由主 agent 完成 |
++| 普通行为变更、缺陷修复 | 核对原问题和测试，优先一次新上下文审查；根据影响执行回归 |
++| 涉及授权、计费、敏感数据、迁移、执行权限、CI／发布配置或被广泛复用的架构 | 沿真实信任边界和失败后果深入检查；复用项目现有安全、契约和迁移检查；需要不同视角时分配有边界的专项审查 |
++
++强度取决于具体影响、可逆性和漏检后果，不由作者是人还是 agent、文件数或固定风险标签决定。专项审查占用同一子 agent 预算，任务无关的安全扫描或全仓审计不自动加入。人审、合并和发布继续沿用项目的实际要求与授权，模型结论不替代规定的人审，也不额外创造审批关卡。
++
++## 2. 先运行确定性检查
++
++按[自动检查](自动检查.md)发现项目已有命令，先取得与当前输入对应的结果。格式、类型、测试、构建、依赖边界等能由工具判定的问题交给工具；不为每次审查发明另一套框架。执行失败与业务失败区分，不把未执行、超时、缺失环境或待运行的 CI 记为通过。
++
++自动检查提供可执行事实，不是完整正确性证明。主 agent 可先修复明确错误；与失败无依赖的审查可继续。确定性工具已经定位的问题，在最终结果中引用其证据，不再生成一份重复的模型意见。
++
++## 3. 独立找缺陷，并核实候选
++
++由[独立验证子代理](../agents/独立验证.md)使用新上下文读取原始要求、适用约定、基线差异、当前实现和检查结果，不继承实现者推理或自评。至少考虑：问题是否真正被解决、架构和复用是否成立、现有调用会否回归、错误路径与权限边界是否满足要求、受影响的说明是否仍准确。
++
++候选发现先核实，再作为实质问题交付：沿调用路径确认触发条件与后果，优先复现、契约检查或确定的静态证据。复杂或有争议的发现可让另一验证者独立确认；传递候选及原始材料，要求主动检验反例，不要求同意前者。多个 agent 的一致或投票不能代替事实依据。
++
++对没有依据的疑点标为待确认，不据此要求改代码。纯偏好、无关清理和对已不可能发生路径的推测不进入缺陷清单；有效约定的违反若有具体后果或是必需门槛，仍须报告。
++
++## 4. 处置发现与复核修复
++
++每项实质发现保留稳定标识、位置、触发条件、后果、证据、严重性和归属，按严重性排序。归属区分本次引入、原有问题和非阻塞建议；原有问题若阻止本次必要验收，仍说明影响，不能仅因原有就忽略。
++
++主 agent 为每项发现明确处置：修复并复验、证据表明为误报、有效需求允许且给出理由，或仍未解决并报告具体阻塞。不能只把状态改为关闭。同类缺陷检查本次相关实例，避免逐行反复修复。简单任务可在对话完成记录，复杂或持续审查沿用已有问题记录与交接。
++
++| 证据状态 | 可以得出的结论 |
++|---|---|
++| 已确认缺陷，尚未修复 | 本次相关验收仍未满足 |
++| 已修改，尚未复验 | 待验证，不能称为已解决 |
++| 对当前代码复验通过且未引入相关回归 | 在已检验范围内解决 |
++| 有原始要求或反例证明误报／行为有意如此 | 说明依据，保留处置理由，后续不重复提出 |
++| 代码、规则、检查配置或 CI 对应提交已变 | 原结果保留原范围，受影响项需重新核实 |
++
++首次覆盖本次整体差异；后续聚焦修复差异及其影响，有新风险才扩展。已解决发现去重；默认连续 3 轮仍未收敛时，由主 agent 重新检查根因、接口和验证方法，调整方案，不能因轮次用尽跳过缺陷或自动宣告完成。
++
++## 5. 整合与交付
++
++主 agent 核对最终差异、必要自动检查、发现处置和相关集成。自动检查、独立代码审查、运行验收和项目规定的人审分别报告，任何单一通过都不代替其余必需项。CI 结果须对应本次提交；本地检查须对应最终工作区，修复后的相关结果不能借用修复前通过。
++
++回复先给实质问题数量和结论；没有发现时明确说明。提供需要用户理解的已确认缺陷、检查证据、未覆盖范围与必要决定。误报在内部处置记录中保留理由，不把未核实疑点和大量风格建议交给用户消化。缺陷修复还需说明根因与回归如何防止重现。
++
++如任务包含 PR、合并或发布，沿用已有 CI、合并队列、分阶段发布及恢复办法，补齐该任务要求的测试、风险和恢复信息；在合并后的实际状态执行要求的检查。普通编码不因此自动创建 PR、修改分支保护、部署、监控或发送评论。
++
++## 6. 让后续审查变好
++
++重复出现的已确认问题优先转成有区分能力的回归测试、lint／边界规则或简短项目约定；只有确属可复用的技能失误才改技能。项目业务规则留在项目，不写进通用技能。事故或回退案例可在授权范围内加入评估夹具，同时保留正确实现作为反例，检查审查者是否会误报。
++
++已有持续审查记录时，观察真实缺陷检出、误报处置、修复轮次和实际等待／运行成本；有发布数据时再看回退或事故。比较同一批有缺陷与干净案例，避免只追求发现数量；这些记录不默认触发定时任务、遥测、远端写回或长期仪表盘。
+--- /dev/null
++++ after/references/workflows/自动检查.md
+@@ -0,0 +1,64 @@
++# 自动检查与流程接入
++
++自动化执行可确定的检查并返回原始证据，审查者判断需求、设计和真实后果。优先调用项目已有脚本、任务入口和 CI；缺少必需检查时按实际风险补充，不要求先建立通用审查平台。
++
++## 选择命令与触发时点
++
++从仓库指令、脚本、构建配置和既有 CI 查出适用命令、运行条件及副作用。选择与本次验收及影响相关的检查，同时保留项目要求的必需项；命令失败不能静默降为非必需。纯风格交给既有格式／lint 工具，自动格式化应先完成再固定本轮检查输入。
++
++| 时点 | 可自动执行的工作 | 判断边界 |
++|---|---|---|
++| 实现前 | 相关测试基线 | 原有失败记录来源和影响，不当作新实现的 RED |
++| 切片或相关文件变化后 | 受影响测试、类型／边界／格式检查 | 独立命令才并行；共享端口、数据库、缓存或文件时串行或隔离 |
++| 独立审查前 | 必需检查集合，保留证据 | 失败先定位，能独立推进的审查仍可进行 |
++| 修复后 | 缺陷复现用例及受影响回归 | 聚焦修复，依据影响扩大；不重复整个无变化过程 |
++| 交付、提交或已有 PR 更新时 | 核对证据是否仍有效，执行已有 CI 必需项 | 待运行、失败、超时和旧提交结果不能冒充当前成功 |
++| 已授权的合并或发布 | 项目要求的合并后检查、冒烟及恢复核对 | 沿用项目实际流程，不从普通编码自动进入发布 |
++
++宿主已有文件事件、任务结束事件或 CI 入口时，可接入同一检查命令。命令式自动检查是否能阻止完成，由宿主／CI 对退出码的处理决定，Markdown 本身没有强制能力。结束事件只核实当前结果，过期时返回失败原因并安排修复／重跑；避免结束事件反复启动新的审查或无限重试。
++
++## 可选的本地执行器
++
++需要批量运行、保存日志或从现有自动化读取结果时，使用[执行器](../../scripts/run_review_checks.py)。小任务已有命令即可，不要求额外配置。执行器只用 Python 标准库，顺序执行以避免默认争抢共享资源；不调用模型、修改验收、安装依赖或创建宿主钩子。
++
++配置参考[订单夹具示例](../../assets/自动检查配置示例.json)，替换成目标项目已有命令。配置仅包含 `inputs` 与 `checks`：
++
++- `inputs`：项目内非空路径数组，包含受审代码、测试、相关规则、配置、依赖锁文件及其他会改变结论的输入。递归记录文件内容摘要、文件与目录的权限及目录存在性，含空目录；文件符号链接还记录链接目标，保留显式选择的链接身份。不要仅列改过的单个实现文件而遗漏接口和测试。执行器不会推断完整依赖，也不会追踪外部服务或环境变化。
++- `checks`：非空检查数组。每项的 `id` 是唯一的小写英文标识，`argv` 是参数数组；可设项目内 `cwd`（默认 `.`）、正数 `timeout_seconds`（默认 120）及布尔值 `required`（默认 `true`）。非必需项仅适用于项目允许的建议性检查，失败仍显示警告。
++
++使用实际技能目录和目标项目路径调用，例如：
++
++```sh
++python3 /path/to/coder-assistant/scripts/run_review_checks.py \
++  --project /path/to/project \
++  --config /path/to/project-checks.json \
++  --output /path/to/new-review-run
++```
++
++`--output` 必须是尚不存在的本轮证据目录；不要覆盖历史结果。项目内输出会从输入摘要排除；为容纳输出新建的父目录不计目录元数据，但其中其他文件仍须追踪。执行器先校验整份配置，再逐项运行，记录参数、工作目录、UTC 时间、退出码、持续时间、合并原始日志、检查前后输入摘要和配置摘要，最终写入 `result.json`，并向标准输出返回同一 JSON。继承运行环境，但不记录环境变量；配置和报告不得包含凭据。
++
++| 退出码／状态 | 含义 |
++|---|---|
++| `0`，`passed` | 本轮已配置的自动检查通过；不表示代码审查或整体验收已通过 |
++| `0`，`passed_with_warnings` | 必需项通过，但建议项失败／不可执行／超时，仍需按范围报告 |
++| `1`，`failed` | 至少一项必需检查失败、不可执行或超时 |
++| `2`，`configuration_error` | 配置、路径或证据无法使用；未取得通过结论 |
++| `3`，`stale` | 检查期间或核实时输入／配置已变化，旧结果不能覆盖当前状态 |
++
++目录中的 `.git`、`node_modules`、`.venv`、`__pycache__` 和 Python 字节码不计入摘要，目录符号链接及经过它的输入路径需改为显式选择真实目录；文件链接解析后也须在项目内。依赖环境、工具版本或外部系统变化仍需主 agent 另行判断并重验。命令按数组直接执行，不做 shell 展开；它们仍有自身权限和副作用，执行器不是权限隔离机制。
++
++只运行有界、会退出的命令，避免 watch／后台服务。超时会结束本次命令；POSIX 上同时回收其进程组，其他平台只保证直接进程结束，转交资源前另核查后代进程。
++
++## 核实旧证据与接入 CI
++
++在交付或现有事件入口中核实结果，无需重跑命令：
++
++```sh
++python3 /path/to/coder-assistant/scripts/run_review_checks.py \
++  --project /path/to/project \
++  --verify /path/to/review-run/result.json
++```
++
++核实会重算指定输入的内容与元数据及配置摘要，保留原始报告且不执行检查命令；失效或失败结果不变成通过。当前证据格式为 `schema_version: 2`；不支持的旧格式返回证据错误，须重新运行，不能据此取得通过。它只能核对所声明的输入，不能验证历史 TDD、模型审查、规定的人审或未声明的依赖。
++
++CI 可直接调用同一执行器，用退出码决定该检查作业是否成功，并上传日志和 `result.json`；即使失败也保存工件。每轮用新目录，按实际提交关联结果。优先使用现有上传和检查机制，不默认推送代码、发布评论、放宽必需检查或配置自动合并。宿主事件接入应使用该宿主真实协议及防重入机制，未实际安装或验证时只交付配置说明，不声称自动触发已生效。
+--- /dev/null
++++ after/scripts/run_review_checks.py
+@@ -0,0 +1,245 @@
++"""批量运行项目已有检查，或核实旧证据是否仍对应当前输入。
++
++仅使用标准库。配置格式见 references/workflows/自动检查.md。
++退出码：0 自动检查通过（可能有非必需项警告），1 必需项失败，
++2 配置／证据错误，3 输入已变化。结果不代表人工或模型审查通过。
++"""
++
++import argparse
++from datetime import datetime, timezone
++import hashlib
++import json
++import math
++import os
++from pathlib import Path
++import re
++import signal
++import stat
++import subprocess
++import sys
++import time
++
++
++IGNORED_DIRS = {".git", "node_modules", ".venv", "__pycache__"}
++
++
++def digest(data):
++    return hashlib.sha256(data).hexdigest()
++
++
++def timestamp():
++    return datetime.now(timezone.utc).isoformat()
++
++
++def project_path(root, value):
++    if not isinstance(value, str) or not value:
++        raise ValueError("项目路径须为非空字符串")
++    path = (root / value).resolve()
++    if not path.is_relative_to(root):
++        raise ValueError(f"路径超出项目：{value}")
++    return path
++
++
++def snapshot(root, inputs, output, output_created_parents=()):
++    manifest = {}
++    ignored_directory_metadata = {Path(value) for value in output_created_parents}
++
++    def visit(path):
++        if path == output or path.is_relative_to(output):
++            return
++        if path.name in IGNORED_DIRS or path.suffix in {".pyc", ".pyo"}:
++            return
++        resolved = path.resolve()
++        if not resolved.is_relative_to(root):
++            raise ValueError(f"输入符号链接超出项目：{path}")
++        name = path.relative_to(root).as_posix() or "."
++        if path.is_symlink() and path.is_dir():
++            raise ValueError(f"目录符号链接需在 inputs 中显式选择真实目录：{name}")
++        if not path.exists():
++            manifest[name] = {"type": "missing"}
++        elif path.is_dir():
++            if path not in ignored_directory_metadata:
++                manifest[name] = {"type": "directory", "mode": stat.S_IMODE(path.stat().st_mode)}
++            for child in sorted(path.iterdir()):
++                visit(child)
++        elif path.is_file():
++            manifest[name] = {"type": "file", "sha256": digest(path.read_bytes()),
++                              "mode": stat.S_IMODE(path.stat().st_mode)}
++        else:
++            raise ValueError(f"输入不是普通文件或目录：{name}")
++        if path.is_symlink():
++            manifest[name]["symlink_target"] = os.readlink(path)
++
++    for value in inputs:
++        project_path(root, value)
++        path = root / value
++        if not path.is_relative_to(root):
++            raise ValueError(f"输入路径须位于项目目录内：{value}")
++        for parent in path.parents:
++            if parent == root or not parent.is_relative_to(root):
++                break
++            if parent.is_symlink():
++                raise ValueError(f"输入经过目录符号链接，须选择真实目录：{value}")
++        visit(Path(os.path.abspath(path)))
++    return dict(sorted(manifest.items()))
++
++
++def validate(config, root):
++    if not root.is_dir():
++        raise ValueError("项目目录不存在")
++    if not isinstance(config, dict) or set(config) != {"inputs", "checks"}:
++        raise ValueError("配置须包含且仅包含 inputs 和 checks")
++    inputs, checks = config["inputs"], config["checks"]
++    if not isinstance(inputs, list) or not inputs:
++        raise ValueError("inputs 须为非空项目路径列表")
++    for value in inputs:
++        if not project_path(root, value).exists():
++            raise ValueError(f"输入不存在：{value}")
++    if not isinstance(checks, list) or not checks:
++        raise ValueError("checks 不能为空；没有执行检查不能报告通过")
++    seen = set()
++    for check in checks:
++        if not isinstance(check, dict) or set(check) - {"id", "argv", "cwd", "required", "timeout_seconds"}:
++            raise ValueError("检查项包含不支持的字段")
++        name, argv = check.get("id"), check.get("argv")
++        if not isinstance(name, str) or not re.fullmatch(r"[a-z][a-z0-9_-]*", name) or name in seen:
++            raise ValueError("检查 id 须为不重复的小写英文标识")
++        seen.add(name)
++        if not isinstance(argv, list) or not argv or any(not isinstance(v, str) or not v or "\x00" in v for v in argv):
++            raise ValueError(f"{name}: argv 须为非空参数数组，不接受 shell 命令字符串")
++        if not isinstance(check.get("required", True), bool):
++            raise ValueError(f"{name}: required 须为布尔值")
++        timeout = check.get("timeout_seconds", 120)
++        if isinstance(timeout, bool) or not isinstance(timeout, (int, float)) or not math.isfinite(timeout) or timeout <= 0:
++            raise ValueError(f"{name}: timeout_seconds 须为正数")
++        if not project_path(root, check.get("cwd", ".")).is_dir():
++            raise ValueError(f"{name}: cwd 目录不存在")
++    return inputs, checks
++
++
++def run_one(check, root, output):
++    started = time.monotonic()
++    result = {"id": check["id"], "argv": check["argv"],
++              "cwd": str(project_path(root, check.get("cwd", "."))),
++              "required": check.get("required", True),
++              "timeout_seconds": check.get("timeout_seconds", 120),
++              "started_at_utc": timestamp(), "log": check["id"] + ".log"}
++    with (output / result["log"]).open("wb") as log:
++        try:
++            process = subprocess.Popen(check["argv"], cwd=result["cwd"], stdout=log,
++                                       stderr=subprocess.STDOUT, shell=False,
++                                       start_new_session=os.name == "posix")
++            try:
++                result["exit_code"] = process.wait(timeout=result["timeout_seconds"])
++                result["status"] = "passed" if process.returncode == 0 else "failed"
++            except subprocess.TimeoutExpired:
++                if os.name == "posix":
++                    try:
++                        os.killpg(process.pid, signal.SIGKILL)
++                    except ProcessLookupError:
++                        pass
++                else:
++                    process.kill()
++                process.wait()
++                result.update(status="timeout", exit_code=process.returncode)
++                log.write(b"\n[runner] check timed out\n")
++        except OSError as error:
++            result.update(status="error", exit_code=None, error=str(error))
++            log.write(str(error).encode("utf-8", errors="replace"))
++    result.update(finished_at_utc=timestamp(), duration_seconds=round(time.monotonic() - started, 3))
++    return result
++
++
++def changed_paths(before, after):
++    return sorted(key for key in before.keys() | after.keys()
++                  if key not in before or key not in after or before[key] != after[key])
++
++
++def state(root, inputs, output, config_path, config_hash, before, output_created_parents):
++    after = snapshot(root, inputs, output, output_created_parents)
++    config_changed = not config_path.is_file() or digest(config_path.read_bytes()) != config_hash
++    changed = changed_paths(before, after)
++    return after, config_changed, changed
++
++
++def exit_code(status):
++    return {"passed": 0, "passed_with_warnings": 0, "failed": 1, "configuration_error": 2, "stale": 3}[status]
++
++
++def run_checks(root, config_path, output):
++    data = config_path.read_bytes()
++    config = json.loads(data)
++    inputs, checks = validate(config, root)
++    output_created_parents = []
++    parent = output.parent
++    while parent.is_relative_to(root) and not parent.exists():
++        output_created_parents.append(str(parent))
++        parent = parent.parent
++    before = snapshot(root, inputs, output, output_created_parents)
++    output.mkdir(parents=True, exist_ok=False)
++    report = {"schema_version": 2, "scope": "automated_checks_only", "review": "not_assessed",
++              "project": str(root), "config_path": str(config_path), "config_sha256": digest(data),
++              "output": str(output), "output_created_parents": output_created_parents,
++              "input_paths": inputs, "inputs_before": before,
++              "started_at_utc": timestamp(), "python": sys.version,
++              "checks": []}
++    for check in checks:
++        report["checks"].append(run_one(check, root, output))
++    try:
++        after, config_changed, changed = state(root, inputs, output, config_path, digest(data), before,
++                                              output_created_parents)
++        stale = bool(config_changed or changed)
++        report.update(inputs_after=after, config_changed=config_changed, changed_inputs=changed)
++    except (OSError, ValueError) as error:
++        stale = True
++        report.update(inputs_after=None, state_error=str(error))
++    failed = any(c["required"] and c["status"] != "passed" for c in report["checks"])
++    warning = any(c["status"] != "passed" for c in report["checks"])
++    status = "failed" if failed else "passed_with_warnings" if warning else "passed"
++    report.update(status="stale" if stale else status, finished_at_utc=timestamp())
++    (output / "result.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
++    return report
++
++
++def verify_saved(root, path):
++    report = json.loads(path.read_text(encoding="utf-8"))
++    if (not isinstance(report, dict) or report.get("schema_version") != 2
++            or report.get("scope") != "automated_checks_only" or Path(report["project"]).resolve() != root
++            or report.get("status") not in {"passed", "passed_with_warnings", "failed", "stale"}):
++        raise ValueError("不是本项目支持的检查证据")
++    inputs = report["input_paths"]
++    if not isinstance(inputs, list) or not inputs or not isinstance(report["inputs_before"], dict):
++        raise ValueError("证据缺少输入范围或摘要")
++    if not isinstance(report["checks"], list) or not report["checks"]:
++        raise ValueError("证据没有实际检查项")
++    after, config_changed, changed = state(root, inputs, Path(report["output"]),
++                                          Path(report["config_path"]), report["config_sha256"],
++                                          report["inputs_before"], report["output_created_parents"])
++    status = "stale" if config_changed or changed else report["status"]
++    return {"schema_version": 2, "scope": "automated_checks_only", "review": "not_assessed",
++            "status": status, "evidence": str(path), "checked_at_utc": timestamp(),
++            "changed_inputs": changed, "config_changed": config_changed}
++
++
++def main(argv=None):
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--project", required=True, type=Path)
++    parser.add_argument("--config", type=Path)
++    parser.add_argument("--output", type=Path)
++    parser.add_argument("--verify", type=Path)
++    args = parser.parse_args(argv)
++    try:
++        if args.verify and not args.config and not args.output:
++            report = verify_saved(args.project.resolve(), args.verify.resolve())
++        elif not args.verify and args.config and args.output:
++            report = run_checks(args.project.resolve(), args.config.resolve(), args.output.resolve())
++        else:
++            raise ValueError("运行须提供 --config 与 --output；核实旧证据仅提供 --verify")
++    except (OSError, ValueError, KeyError, TypeError) as error:
++        report = {"status": "configuration_error", "error": str(error)}
++    print(json.dumps(report, ensure_ascii=False, indent=2))
++    return exit_code(report["status"])
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+--- /dev/null
++++ after/tests/test_review_checks.py
+@@ -0,0 +1,265 @@
++"""检查自动化执行器的实际进程、证据与失效行为。"""
++
++import json
++import os
++from pathlib import Path
++import subprocess
++import sys
++import tempfile
++import time
++import unittest
++
++
++SCRIPT = Path(__file__).resolve().parents[1] / "scripts/run_review_checks.py"
++
++
++class ReviewCheckTests(unittest.TestCase):
++    def setUp(self):
++        self.tmp = tempfile.TemporaryDirectory()
++        self.addCleanup(self.tmp.cleanup)
++        self.base = Path(self.tmp.name)
++        self.project = self.base / "project"
++        self.project.mkdir()
++        (self.project / "src").mkdir()
++        (self.project / "src/app.py").write_text("value = 1\n")
++        self.config = self.base / "checks.json"
++        self.output = self.base / "evidence"
++
++    def command(self, code, **options):
++        return {"id": "check", "argv": [sys.executable, "-c", code], **options}
++
++    def run_checks(self, checks, inputs=None, raw=None):
++        config = {"inputs": ["src"] if inputs is None else inputs, "checks": checks}
++        self.config.write_text(json.dumps(config if raw is None else raw))
++        result = subprocess.run(
++            [sys.executable, str(SCRIPT), "--project", str(self.project),
++             "--config", str(self.config), "--output", str(self.output)],
++            capture_output=True, text=True, timeout=10,
++        )
++        report = json.loads(result.stdout)
++        return result, report
++
++    def verify(self):
++        result = subprocess.run(
++            [sys.executable, str(SCRIPT), "--project", str(self.project),
++             "--verify", str(self.output / "result.json")],
++            capture_output=True, text=True, timeout=10,
++        )
++        return result, json.loads(result.stdout)
++
++    def test_success_keeps_real_output_and_input_manifest(self):
++        result, report = self.run_checks([self.command("print('actual output')")])
++        self.assertEqual(result.returncode, 0)
++        self.assertEqual(report["status"], "passed")
++        self.assertIn("src/app.py", report["inputs_before"])
++        self.assertEqual(report["inputs_before"], report["inputs_after"])
++        check = report["checks"][0]
++        self.assertEqual(check["exit_code"], 0)
++        self.assertIn("actual output", (self.output / check["log"]).read_text())
++        self.assertEqual(json.loads((self.output / "result.json").read_text()), report)
++
++    def test_failure_does_not_hide_later_check_results(self):
++        failed = self.command("import sys; print('broken'); sys.exit(7)")
++        next_check = self.command("print('second ran')", id="second")
++        result, report = self.run_checks([failed, next_check])
++        self.assertEqual(result.returncode, 1)
++        self.assertEqual(report["status"], "failed")
++        self.assertEqual([c["status"] for c in report["checks"]], ["failed", "passed"])
++        self.assertEqual(report["checks"][0]["exit_code"], 7)
++
++    def test_optional_failure_is_visible_as_warning(self):
++        result, report = self.run_checks([self.command("raise SystemExit(4)", required=False)])
++        self.assertEqual(result.returncode, 0)
++        self.assertEqual(report["status"], "passed_with_warnings")
++        self.assertEqual(report["checks"][0]["status"], "failed")
++
++    def test_missing_executable_is_error_and_does_not_abort_batch(self):
++        missing = {"id": "missing", "argv": [str(self.base / "missing-executable")]}
++        result, report = self.run_checks([missing, self.command("print('ok')")])
++        self.assertEqual(result.returncode, 1)
++        self.assertEqual([c["status"] for c in report["checks"]], ["error", "passed"])
++
++    def test_timeout_is_not_a_pass(self):
++        result, report = self.run_checks([self.command("import time; time.sleep(2)", timeout_seconds=0.1)])
++        self.assertEqual(result.returncode, 1)
++        self.assertEqual(report["checks"][0]["status"], "timeout")
++
++    @unittest.skipUnless(os.name == "posix", "进程组回收在 POSIX 上验证")
++    def test_timeout_stops_child_process_writes(self):
++        marker = self.base / "orphan-marker"
++        child = f"import time; from pathlib import Path; time.sleep(0.5); Path({str(marker)!r}).write_text('orphan')"
++        parent = f"import subprocess, sys, time; subprocess.Popen([sys.executable, '-c', {child!r}]); time.sleep(2)"
++        result, report = self.run_checks([self.command(parent, timeout_seconds=0.15)])
++        self.assertEqual(result.returncode, 1)
++        self.assertEqual(report["checks"][0]["status"], "timeout")
++        time.sleep(0.6)
++        self.assertFalse(marker.exists())
++
++    def test_source_mutation_invalidates_success(self):
++        code = "from pathlib import Path; Path('src/app.py').write_text('value = 2\\n')"
++        result, report = self.run_checks([self.command(code)])
++        self.assertEqual(result.returncode, 3)
++        self.assertEqual(report["status"], "stale")
++        self.assertEqual(report["checks"][0]["status"], "passed")
++        self.assertIn("src/app.py", report["changed_inputs"])
++
++    def test_added_input_file_is_detected(self):
++        result, report = self.run_checks([self.command("from pathlib import Path; Path('src/new.py').write_text('new')")])
++        self.assertEqual(result.returncode, 3)
++        self.assertIn("src/new.py", report["changed_inputs"])
++
++    def test_config_mutation_also_invalidates_success(self):
++        code = f"from pathlib import Path; Path({str(self.config)!r}).write_text('{{}}')"
++        result, report = self.run_checks([self.command(code)])
++        self.assertEqual(result.returncode, 3)
++        self.assertTrue(report["config_changed"])
++
++    def test_empty_checks_cannot_produce_green_result(self):
++        result, report = self.run_checks([])
++        self.assertEqual(result.returncode, 2)
++        self.assertEqual(report["status"], "configuration_error")
++
++    def test_string_shell_command_is_rejected_before_execution(self):
++        marker = self.base / "should-not-exist"
++        valid = self.command(f"from pathlib import Path; Path({str(marker)!r}).touch()")
++        result, report = self.run_checks([valid, {"id": "bad", "argv": "echo unsafe"}])
++        self.assertEqual(result.returncode, 2)
++        self.assertFalse(marker.exists())
++
++    def test_arguments_are_not_interpreted_by_shell(self):
++        marker = self.base / "shell-marker"
++        literal = f"$(touch {marker})"
++        command = {"id": "literal", "argv": [sys.executable, "-c", "import sys; print(sys.argv[1])", literal]}
++        result, report = self.run_checks([command])
++        self.assertEqual(result.returncode, 0)
++        self.assertIn(literal, (self.output / report["checks"][0]["log"]).read_text())
++        self.assertFalse(marker.exists())
++
++    def test_path_escape_and_missing_inputs_are_rejected(self):
++        for inputs in [["../outside"], ["missing"], []]:
++            with self.subTest(inputs=inputs):
++                result, report = self.run_checks([self.command("print('ok')")], inputs=inputs)
++                self.assertEqual(result.returncode, 2)
++                self.assertEqual(report["status"], "configuration_error")
++
++    def test_cwd_cannot_escape_project(self):
++        result, report = self.run_checks([self.command("print('ok')", cwd="..")])
++        self.assertEqual(result.returncode, 2)
++
++    def test_invalid_required_flag_and_duplicate_ids_are_rejected(self):
++        for checks in [[self.command("print('ok')", required="false")],
++                       [self.command("print('one')"), self.command("print('two')")]]:
++            with self.subTest(checks=checks):
++                result, report = self.run_checks(checks)
++                self.assertEqual(result.returncode, 2)
++
++    def test_existing_evidence_is_not_overwritten(self):
++        self.output.mkdir()
++        sentinel = self.output / "result.json"
++        sentinel.write_text('preserve old evidence')
++        result, report = self.run_checks([self.command("print('ok')")])
++        self.assertEqual(result.returncode, 2)
++        self.assertEqual(sentinel.read_text(), 'preserve old evidence')
++
++    def test_own_evidence_and_python_cache_do_not_stale_project(self):
++        self.output = self.project / ".review-run"
++        result, report = self.run_checks([self.command("from pathlib import Path; p=Path('src/__pycache__'); p.mkdir(); (p/'app.pyc').write_bytes(b'cache')")], inputs=["."])
++        self.assertEqual(result.returncode, 0)
++        self.assertEqual(report["status"], "passed")
++
++    def test_later_edits_make_saved_pass_stale_without_rerunning_command(self):
++        counter = self.base / "counter"
++        code = f"from pathlib import Path; p=Path({str(counter)!r}); p.write_text(str(int(p.read_text())+1) if p.exists() else '1')"
++        result, _ = self.run_checks([self.command(code)])
++        self.assertEqual(result.returncode, 0)
++        (self.project / "src/app.py").write_text('value = 3\n')
++        verified, report = self.verify()
++        self.assertEqual(verified.returncode, 3)
++        self.assertEqual(report["status"], "stale")
++        self.assertEqual(counter.read_text(), '1')
++
++    def test_verify_preserves_failure_and_original_report(self):
++        result, _ = self.run_checks([self.command("raise SystemExit(1)")])
++        self.assertEqual(result.returncode, 1)
++        original = (self.output / "result.json").read_bytes()
++        verified, report = self.verify()
++        self.assertEqual(verified.returncode, 1)
++        self.assertEqual(report["status"], "failed")
++        self.assertEqual((self.output / "result.json").read_bytes(), original)
++
++    def test_unchanged_saved_pass_is_current(self):
++        result, _ = self.run_checks([self.command("print('ok')")])
++        self.assertEqual(result.returncode, 0)
++        verified, report = self.verify()
++        self.assertEqual(verified.returncode, 0)
++        self.assertEqual(report["status"], "passed")
++
++    @unittest.skipUnless(os.name == "posix", "可执行权限在 POSIX 上验证")
++    def test_executable_permission_change_invalidates_saved_pass(self):
++        check = self.project / "check.sh"
++        check.write_text("#!/bin/sh\nexit 0\n")
++        check.chmod(0o755)
++        checks = [{"id": "script", "argv": ["./check.sh"]}]
++        result, _ = self.run_checks(checks, inputs=["check.sh"])
++        self.assertEqual(result.returncode, 0)
++        check.chmod(0o644)
++        verified, report = self.verify()
++        self.assertEqual(verified.returncode, 3)
++        self.assertIn("check.sh", report["changed_inputs"])
++        self.output = self.base / "rerun"
++        rerun, _ = self.run_checks(checks, inputs=["check.sh"])
++        self.assertEqual(rerun.returncode, 1)
++
++    def test_deleted_empty_input_directory_invalidates_saved_pass(self):
++        directory = self.project / "migrations"
++        directory.mkdir()
++        check = self.command("from pathlib import Path; assert Path('migrations').is_dir()")
++        result, _ = self.run_checks([check], inputs=["migrations"])
++        self.assertEqual(result.returncode, 0)
++        directory.rmdir()
++        verified, report = self.verify()
++        self.assertEqual(verified.returncode, 3)
++        self.assertIn("migrations", report["changed_inputs"])
++
++    def test_created_evidence_ancestors_do_not_invalidate_project(self):
++        self.output = self.project / "artifacts" / "review" / "run"
++        result, report = self.run_checks([self.command("print('ok')")], inputs=["."])
++        self.assertEqual(result.returncode, 0)
++        self.assertEqual(report["inputs_before"], report["inputs_after"])
++        verified, _ = self.verify()
++        self.assertEqual(verified.returncode, 0)
++        (self.project / "artifacts/other.py").write_text("value = 1\n")
++        changed, report = self.verify()
++        self.assertEqual(changed.returncode, 3)
++        self.assertIn("artifacts/other.py", report["changed_inputs"])
++
++    @unittest.skipUnless(os.name == "posix", "文件符号链接在 POSIX 上验证")
++    def test_retargeted_file_link_invalidates_recursive_and_explicit_inputs(self):
++        script = "from pathlib import Path; assert Path(__file__).resolve().with_name('value.txt').read_text() == 'expected'\n"
++        for name, value in [("one", "expected"), ("two", "different")]:
++            directory = self.project / name
++            directory.mkdir()
++            (directory / "entry.py").write_text(script)
++            (directory / "value.txt").write_text(value)
++        link = self.project / "entry.py"
++        checks = [{"id": "linked", "argv": [sys.executable, "-B", "entry.py"]}]
++        for number, inputs in enumerate([["."], ["entry.py", "one", "two"]]):
++            with self.subTest(inputs=inputs):
++                if link.is_symlink():
++                    link.unlink()
++                link.symlink_to("one/entry.py")
++                self.output = self.base / f"link-{number}"
++                result, _ = self.run_checks(checks, inputs=inputs)
++                self.assertEqual(result.returncode, 0)
++                link.unlink()
++                link.symlink_to("two/entry.py")
++                verified, report = self.verify()
++                self.assertEqual(verified.returncode, 3)
++                self.assertIn("entry.py", report["changed_inputs"])
++                self.output = self.base / f"link-rerun-{number}"
++                rerun, _ = self.run_checks(checks, inputs=inputs)
++                self.assertEqual(rerun.returncode, 1)
++
++
++if __name__ == "__main__":
++    unittest.main()
+--- before/tests/行为验证.md
++++ after/tests/行为验证.md
+@@ -39,11 +39,19 @@
+ | M-07 | 子任务仍在运行时用户改变规则，或验证后代码又变化 | 停止受影响旧写入并确认实际状态，再交接归属；旧证据保留适用范围，变化项重验，不冒用旧通过结果 |
+ | M-08 | 宿主没有委派工具，或无法提供新的验证上下文 | 主 agent 完成可做工作，如实报告未独立验证；不要求安装框架、不假装已创建 agent 或取得独立结论 |
+ | M-09 | 审查连续产生风格建议、重复发现，或实质问题三轮未收敛 | 去重并控制范围，后续聚焦修复及影响；达到默认轮次后重评方案，未解决缺陷不因轮次耗尽而标为完成 |
++| C-01 | 项目已有测试、类型或边界检查入口；某项失败或超时 | 先复用实际命令，记录输出和当前状态；不降级必需项、不将不可执行视为通过，工具诊断不重复包装成模型意见 |
++| C-02 | 独立审查产生疑点，干净实现也包含容易误判的特殊语义 | 核实原始约定、触发和后果；确认缺陷才要求修复，保留误报理由，不以投票或发现数量决定正确性 |
++| C-03 | 既有自动检查全绿，但缺陷仍违反用户验收 | 绿灯不代替独立审查和真实验收；用原始要求定位漏检，并补充有区分能力的验证 |
++| C-04 | 检查通过后代码、执行权限、输入目录或检查配置变化，或 CI 结果来自旧提交 | 旧证据保留原范围，重新核实当前状态并重跑受影响项；修复前通过不代表修复后通过 |
++| C-05 | 原有问题、本次缺陷与格式诊断同时存在 | 分清归属和必要门槛；先报真实问题及影响，不扩大无关重构，原有但阻塞本次验收的问题也须说明 |
++| C-06 | 需要接入已有宿主事件或 CI，但当前环境没有已安装钩子或远端仓库 | 可执行命令和接入说明可用；不声称自动触发、分支保护或发布已生效，不自动发送评论或创建定时监控 |
++| C-07 | 持续审查重复漏掉同类错误，另有已确认干净案例 | 将真实问题变为回归或适当规则，同时检查干净反例的误报；不只追求发现数量，不把项目业务规则写进通用技能 |
+ 
+ ## 可运行维护检查
+ 
+-- `python3 -m unittest discover -s tests -p 'test_*.py' -v`：引用检查脚本的行为，不验证模型决策。
++- `python3 -m unittest discover -s tests -p 'test_*.py' -v`：引用检查与自动检查执行器的行为，不验证模型决策。
+ - `python3 scripts/check_links.py .`：包内 Markdown 行内链接及目标标题；支持范围见脚本说明。
++- `python3 -m unittest discover -s tests -p 'test_review_checks.py' -v`：自动检查执行器的进程结果、超时回收、证据保存和输入失效行为，不证明模型审查判断。
+ - `python3 -m unittest discover -s tests/fixtures/order_project/tests -v`：原始样例的既有服务与边界测试。新增接口行为测试由演练者先写入隔离副本。
+ 
+ 每次执行记录：日期、被测版本或快照、环境、方式、场景 ID、输入位置、实际改动与输出、结果、限制。首版结果保存到本目录的验证记录中。
+--- /dev/null
++++ after/tests/验证证据/审查重构/场景演练.py
+@@ -0,0 +1,123 @@
++"""维护者演练：隔离复制订单夹具，观察自动检查与需求验证的差别。
++
++用法：python3 场景演练.py 技能包目录 尚不存在的演练目录
++不会修改技能包或原始夹具。只使用标准库，不调用模型或远端服务。
++"""
++
++from datetime import datetime, timezone
++import difflib
++import json
++from pathlib import Path
++import shutil
++import subprocess
++import sys
++
++
++EXTRA_TESTS = '''from pathlib import Path
++import sys
++import unittest
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++
++from order_app.api import OrderAPI
++from order_app.domain import Order
++from order_app.services import OrderService
++from order_app.store import MemoryOrderStore
++
++
++class CancelledOrderContractTests(unittest.TestCase):
++    def setUp(self):
++        self.order = Order("C1", "alice", "cancelled")
++        self.store = MemoryOrderStore([self.order])
++        self.api = OrderAPI(OrderService(self.store))
++
++    def test_stranger_cannot_cancel_already_cancelled_order(self):
++        with self.assertRaises(PermissionError):
++            self.api.cancel_order("C1", "bob")
++        self.assertEqual(self.store.get("C1"), self.order)
++        self.assertEqual(self.store.save_count, 0)
++
++    def test_owner_repeat_is_allowed_without_write(self):
++        self.assertEqual(self.api.cancel_order("C1", "alice"),
++                         {"id": "C1", "status": "cancelled"})
++        self.assertEqual(self.store.get("C1"), self.order)
++        self.assertEqual(self.store.save_count, 0)
++'''
++
++
++def exercise(package, output):
++    output.mkdir(parents=True, exist_ok=False)
++    project = output / "project"
++    shutil.copytree(package / "tests/fixtures/order_project", project,
++                    ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"))
++    shutil.copyfile(package / "tests/验证证据/接口用例.py", project / "tests/test_api.py")
++    api = project / "order_app/api.py"
++    api.write_text(api.read_text().replace(
++        'raise NotImplementedError("取消入口尚未接入")',
++        'order = self.service.cancel(order_id, actor_id)\n'
++        '        return {"id": order.id, "status": order.status}'), encoding="utf-8")
++    config = output / "checks.json"
++    shutil.copyfile(package / "assets/自动检查配置示例.json", config)
++    original_config = config.read_bytes()
++    runner = package / "scripts/run_review_checks.py"
++    records = []
++
++    def command(name, arguments, expected_code, expected_status):
++        argv = [sys.executable, "-B", str(runner), "--project", str(project)] + arguments
++        result = subprocess.run(argv, capture_output=True, text=True, timeout=90)
++        (output / f"{name}.stdout.json").write_text(result.stdout, encoding="utf-8")
++        (output / f"{name}.stderr.txt").write_text(result.stderr, encoding="utf-8")
++        report = json.loads(result.stdout)
++        records.append({"name": name, "argv": argv, "exit_code": result.returncode,
++                        "status": report["status"]})
++        assert result.returncode == expected_code, records[-1]
++        assert report["status"] == expected_status, records[-1]
++        return report
++
++    def run(name, code=0, status="passed"):
++        return command(name, ["--config", str(config), "--output", str(output / name)], code, status)
++
++    def verify(name, source, code=0, status="passed"):
++        return command(name, ["--verify", str(output / source / "result.json")], code, status)
++
++    run("clean-13")
++    verify("clean-current", "clean-13")
++
++    service = project / "order_app/services.py"
++    correct = service.read_text(encoding="utf-8")
++    guard = '        if order.owner != actor_id:\n            raise PermissionError("只有订单所有者可以取消")\n'
++    repeat = '        if order.status == "cancelled":\n            return order\n'
++    assert guard + repeat in correct
++    broken = correct.replace(guard + repeat, repeat + guard)
++    (output / "injected-defect.patch").write_text("".join(difflib.unified_diff(
++        correct.splitlines(keepends=True), broken.splitlines(keepends=True),
++        fromfile="correct/order_app/services.py", tofile="broken/order_app/services.py")), encoding="utf-8")
++    service.write_text(broken, encoding="utf-8")
++    verify("old-code-stale", "clean-13", 3, "stale")
++    run("missed-defect-13")
++
++    (project / "tests/test_cancelled_contract.py").write_text(EXTRA_TESTS, encoding="utf-8")
++    verify("added-test-stale", "missed-defect-13", 3, "stale")
++    run("confirmed-defect-15", 1, "failed")
++    service.write_text(correct, encoding="utf-8")
++    verify("repair-stale", "confirmed-defect-15", 3, "stale")
++    run("repaired-15")
++    verify("repaired-current", "repaired-15")
++
++    changed_config = json.loads(original_config)
++    changed_config["checks"][0]["timeout_seconds"] += 1
++    config.write_text(json.dumps(changed_config), encoding="utf-8")
++    changed_report = verify("changed-config-stale", "repaired-15", 3, "stale")
++    assert changed_report["config_changed"] is True
++    config.write_bytes(original_config)
++    verify("restored-config-current", "repaired-15")
++
++    summary = {"method": "maintainer_exercise_not_independent_agent",
++               "finished_at_utc": datetime.now(timezone.utc).isoformat(),
++               "package": str(package), "output": str(output), "records": records}
++    (output / "exercise.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
++    print(json.dumps(summary, ensure_ascii=False, indent=2))
++
++
++if __name__ == "__main__":
++    exercise(Path(sys.argv[1]).resolve(), Path(sys.argv[2]).resolve())

@@ -1,0 +1,15 @@
+test_already_cancelled_order_returns_result_without_write (test_api.OrderAPITests.test_already_cancelled_order_returns_result_without_write) ... ok
+test_api_forwards_arguments_to_the_public_service (test_api.OrderAPITests.test_api_forwards_arguments_to_the_public_service) ... ok
+test_case_distinct_order_ids_target_the_requested_order (test_api.OrderAPITests.test_case_distinct_order_ids_target_the_requested_order) ... ok
+test_missing_order_is_rejected_without_changing_data (test_api.OrderAPITests.test_missing_order_is_rejected_without_changing_data) ... ok
+test_order_id_lookup_remains_case_sensitive (test_api.OrderAPITests.test_order_id_lookup_remains_case_sensitive) ... ok
+test_owner_cancels_open_order (test_api.OrderAPITests.test_owner_cancels_open_order) ... ok
+test_repeat_cancel_returns_same_result_without_second_write (test_api.OrderAPITests.test_repeat_cancel_returns_same_result_without_second_write) ... ok
+test_shipped_order_is_rejected_without_changing_data (test_api.OrderAPITests.test_shipped_order_is_rejected_without_changing_data) ... ok
+test_stranger_cannot_repeat_cancel_another_owners_order (test_api.OrderAPITests.test_stranger_cannot_repeat_cancel_another_owners_order) ... ok
+test_stranger_is_rejected_without_changing_data (test_api.OrderAPITests.test_stranger_is_rejected_without_changing_data) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.000s
+
+OK

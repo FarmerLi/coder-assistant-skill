@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "python3",
+    "-B",
+    "/Users/farmerli/.codex/skills/.system/skill-creator/scripts/quick_validate.py",
+    "."
+  ],
+  "cwd": "/Users/farmerli/projects/local/coder-assistant-skill",
+  "exit_code": 0,
+  "finished_at_utc": "2026-10-28T04:25:44.680035+00:00"
+}

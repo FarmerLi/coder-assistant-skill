@@ -1,0 +1,17 @@
+{
+  "modified_existing_files": [
+    "SKILL.md",
+    "tests/行为验证.md",
+    "agents/openai.yaml",
+    "assets/开发交接模板.md",
+    "references/workflows/verification.md",
+    "references/agents/独立验证.md",
+    "references/shared/project-context.md",
+    "references/shared/子代理协作.md"
+  ],
+  "deleted_baseline_files": [],
+  "preserved_original_fixture": true,
+  "preserved_historical_records_and_evidence": true,
+  "snapshot_scope": "SKILL.md, agents, assets, references, scripts (no caches)",
+  "git_available": false
+}

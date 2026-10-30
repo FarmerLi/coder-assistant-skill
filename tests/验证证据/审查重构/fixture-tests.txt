@@ -1,0 +1,12 @@
+test_api_uses_public_service_boundary (test_architecture.OrderBoundaryTests.test_api_uses_public_service_boundary) ... ok
+test_missing_order_is_rejected_without_write (test_services.OrderServiceTests.test_missing_order_is_rejected_without_write) ... ok
+test_order_id_remains_case_sensitive (test_services.OrderServiceTests.test_order_id_remains_case_sensitive) ... ok
+test_owner_cancels_open_order (test_services.OrderServiceTests.test_owner_cancels_open_order) ... ok
+test_repeat_cancel_does_not_write_twice (test_services.OrderServiceTests.test_repeat_cancel_does_not_write_twice) ... ok
+test_shipped_order_is_rejected_without_write (test_services.OrderServiceTests.test_shipped_order_is_rejected_without_write) ... ok
+test_stranger_is_rejected_without_write (test_services.OrderServiceTests.test_stranger_is_rejected_without_write) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.001s
+
+OK

@@ -1,0 +1,59 @@
+# 订单取消入口独立验证报告
+
+## 结论
+
+在本次原始需求和所检查范围内，未发现实质缺陷或阻塞项。代码审查与运行验收均通过：项目回归 17 项、独立补充验收 5 项全部成功，两个实际运行的退出码均为 0。当前项目文件摘要与两次运行前快照完全一致。
+
+此结论覆盖取消入口、相关服务边界、要求中的错误路径、重复取消和订单 ID 大小写语义，不表示已独立证明开发过程中的历史 RED/GREEN 顺序。
+
+## 原始依据与审查位置
+
+- 原始有效需求：`/private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/project/项目说明.md`，用户任务、架构与任务约束、已有验证入口三节。
+- 技能方法：读取了委派指定的 `SKILL.md`、独立验证角色、子代理协作、输入与证据、验证、架构和复用方法。未再次委派。
+- 初始快照：`/private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/evidence/01-baseline/project`；当前目标目录没有 Git 元数据，按实际文件差异核对。
+- 入口：`order_app/api.py:8-10`；现有规则：`order_app/services.py:11-21`；存储契约：`order_app/store.py:4-14`；不可变订单：`order_app/domain.py:4-8`。
+- 全部相关测试：`tests/test_api.py:14-96`、`tests/test_services.py:12-47`、`tests/test_architecture.py:6-17`。
+
+以上代码与测试路径均相对于 `/private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/project`。完整审查差异保存为本目录的 `review.diff`。
+
+## 代码审查发现
+
+1. 范围：相对基线，只将 `OrderAPI.cancel_order` 的未实现异常改为调用服务并映射返回值，以及新增 `tests/test_api.py`。服务、存储、领域模型、既有测试及需求均未修改，没有新依赖或无关业务扩展。
+2. 架构与复用：`api.py:9` 原样传入订单 ID 和操作者 ID，直接复用 `OrderService.cancel` 公开能力；`api.py:10` 将服务返回的订单转换为要求的字典。入口没有导入存储、读取私有属性、复制权限/状态/幂等规则或自行读写数据。
+3. 完整行为：服务先通过存储按精确 ID 读取，接着鉴权，再处理已取消和非 open 状态；只有所属用户的 open 订单进入保存。入口未拦截或转换异常，因此既有 `PermissionError`、`ValueError` 和 `KeyError` 保持有效。
+4. 测试质量：新增测试以真实 `OrderAPI → OrderService → MemoryOrderStore` 链路检查返回结果、状态、不相关订单和保存次数，并有仅提供 `cancel` 的服务替身检查参数转发。业务预期是字面量或独立初始数据，未调用实现算法计算答案。静态边界测试能力有限，但本次入口仅两行可执行逻辑，已人工核对真实依赖和数据访问。
+
+实质问题及严重性：无。未因风格或假设性需求提出额外改动。
+
+## 实际运行与验收覆盖
+
+所有运行均由指定 `run_check.py` 执行，工作目录为目标项目，环境记录为 Python 3.14.2，设置 `PYTHONDONTWRITEBYTECODE=1`。每次运行目录均包含实际命令、起止时间、原始合并输出、退出码、环境、项目快照及各文件 SHA-256。
+
+| 运行 | 实际命令 | 结果 | 证据目录 |
+|---|---|---|---|
+| 全量回归 | `python3 -m unittest discover -s tests -v` | 17 项通过，退出码 0 | `../05-independent-regression/` |
+| 独立契约验收 | `python3 /private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/evidence/independent/check_contract.py` | 5 项通过，退出码 0 | `../06-independent-contract/` |
+
+| 验收行为 | 实际检查依据 |
+|---|---|
+| 所有者取消 open 订单，返回准确字典并保存一次 | 现有接口用例、独立真实状态/操作者矩阵 |
+| 重复取消及初始已取消订单不再次保存 | 现有接口用例、矩阵、独立连续 5 次调用 |
+| 非所有者一律拒绝，包括已取消/已发货状态 | 现有接口用例、独立 3 状态 × 3 操作者矩阵 |
+| 已发货订单拒绝，维持数据 | 现有接口用例、独立矩阵 |
+| 不存在订单拒绝，维持所有既有数据 | 现有接口用例、独立缺失 ID 用例 |
+| 订单 ID 区分大小写，大小写相异订单互不影响 | 现有两个接口用例、独立矩阵和大小写错误查询 |
+| 仅走服务公开接口，原样传参并使用服务结果 | 静态边界回归、人工审查、独立仅公开服务替身 |
+| 原有三类错误透传 | 独立分别检查三类异常且保持同一异常对象 |
+
+独立补充脚本为 `check_contract.py`，SHA-256：`a7e87d7a6e83ccc96e90c9cec586b8ee767215a759499f15845be69ee11d63aa`；摘要另存 `check_contract.sha256.json`。
+
+## 证据对应状态
+
+`state-integrity.json` 对比了两次运行前的 `state.sha256.json` 与运行后的当前项目完整文件清单，均完全一致；入口 SHA-256 为 `d37e9bb7392d93b4f23786cce7c6f058665a51104250bf42c3ae20ccf92f5331`，新增接口测试 SHA-256 为 `9abf3e658c379f62a707e61cdefb313fe577ef1e20ceb9ded5ed9fba2f0abf8e`。因此本报告的通过结论对应同一代码状态。若后续修改相关代码，应重新验证受影响项。
+
+## 修改、未覆盖项与独立性限制
+
+- 仅在授权 evidence 位置新增补充脚本、摘要、差异、状态核对、报告和两次运行的证据目录；未修改生产代码、既有测试、验收要求或基线，没有访问远端。
+- 从新的验证上下文直接读取原始需求、当前代码和初始差异；未读取实现者自评、工作笔记、历史测试输出，也未读取原始技能仓库的维护测试或历史实现。共享文件系统由任务约定冻结，并用摘要核对状态；这不等于操作系统强制隔离。
+- 未执行或验证历史开发阶段的基线测试及 RED/GREEN 过程，未据当前通过状态推断历史执行；本报告不对该历史作保证。
+- 需求明确使用标准库离线样例且无需 HTTP 框架、数据库或远端服务，因此未增加这些系统的集成或上线验收。未发现原始任务中尚未覆盖的当前行为要求。

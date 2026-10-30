@@ -1,0 +1,264 @@
+[
+  {
+    "argv": [
+      "git",
+      "init",
+      "-b",
+      "integration"
+    ],
+    "cwd": "/private/tmp/coder-concurrency-2gzb45er/integration",
+    "exit_code": 0,
+    "stdout": "Initialized empty Git repository in /private/tmp/coder-concurrency-2gzb45er/integration/.git/\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "config",
+      "user.name",
+      "Fixture"
+    ],
+    "cwd": "/private/tmp/coder-concurrency-2gzb45er/integration",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "config",
+      "user.email",
+      "fixture@example.invalid"
+    ],
+    "cwd": "/private/tmp/coder-concurrency-2gzb45er/integration",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "add",
+      "."
+    ],
+    "cwd": "/private/tmp/coder-concurrency-2gzb45er/integration",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "commit",
+      "-m",
+      "fixed user input snapshot"
+    ],
+    "cwd": "/private/tmp/coder-concurrency-2gzb45er/integration",
+    "exit_code": 0,
+    "stdout": "[integration (root-commit) b936a7a] fixed user input snapshot\n 5 files changed, 46 insertions(+)\n create mode 100644 .gitignore\n create mode 100644 money.py\n create mode 100644 tests/test_baseline.py\n create mode 100644 用户草稿.txt\n create mode 100644 项目说明.md\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "apply",
+      "--check",
+      "/private/tmp/coder-concurrency-2gzb45er/session-b-evidence/shipping-fee.patch"
+    ],
+    "cwd": "/private/tmp/coder-concurrency-2gzb45er/integration",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "apply",
+      "/private/tmp/coder-concurrency-2gzb45er/session-b-evidence/shipping-fee.patch"
+    ],
+    "cwd": "/private/tmp/coder-concurrency-2gzb45er/integration",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "apply",
+      "--check",
+      "/private/tmp/coder-concurrency-2gzb45er/session-a-evidence/session-a-final.patch"
+    ],
+    "cwd": "/private/tmp/coder-concurrency-2gzb45er/integration",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "apply",
+      "/private/tmp/coder-concurrency-2gzb45er/session-a-evidence/session-a-final.patch"
+    ],
+    "cwd": "/private/tmp/coder-concurrency-2gzb45er/integration",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-v"
+    ],
+    "cwd": "/private/tmp/coder-concurrency-2gzb45er/integration",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "test_currency_code (test_baseline.BaselineTests.test_currency_code) ... ok\ntest_equal_reduction_returns_zero (test_discounted_total.DiscountedTotalTests.test_equal_reduction_returns_zero) ... ok\ntest_excess_reduction_returns_zero (test_discounted_total.DiscountedTotalTests.test_excess_reduction_returns_zero) ... ok\ntest_large_integer_total_stays_exact (test_discounted_total.DiscountedTotalTests.test_large_integer_total_stays_exact) ... ok\ntest_rejects_negative_amount (test_discounted_total.DiscountedTotalTests.test_rejects_negative_amount) ... ok\ntest_rejects_negative_reduction (test_discounted_total.DiscountedTotalTests.test_rejects_negative_reduction) ... ok\ntest_rejects_two_negative_values (test_discounted_total.DiscountedTotalTests.test_rejects_two_negative_values) ... ok\ntest_subtracts_reduction (test_discounted_total.DiscountedTotalTests.test_subtracts_reduction) ... ok\ntest_zero_amount (test_discounted_total.DiscountedTotalTests.test_zero_amount) ... ok\ntest_zero_reduction (test_discounted_total.DiscountedTotalTests.test_zero_reduction) ... ok\ntest_amount_at_or_above_threshold_is_free (test_shipping_fee.ShippingFeeTests.test_amount_at_or_above_threshold_is_free) ... ok\ntest_amount_below_threshold_costs_ten (test_shipping_fee.ShippingFeeTests.test_amount_below_threshold_costs_ten) ... ok\ntest_negative_amount_is_rejected (test_shipping_fee.ShippingFeeTests.test_negative_amount_is_rejected) ... ok\ntest_empty_sequence (test_subtotal.SubtotalTests.test_empty_sequence) ... ok\ntest_large_integer_total_stays_exact (test_subtotal.SubtotalTests.test_large_integer_total_stays_exact) ... ok\ntest_rejects_negative_price (test_subtotal.SubtotalTests.test_rejects_negative_price) ... ok\ntest_rejects_negative_quantity (test_subtotal.SubtotalTests.test_rejects_negative_quantity) ... ok\ntest_rejects_negative_values_after_valid_item (test_subtotal.SubtotalTests.test_rejects_negative_values_after_valid_item) ... ok\ntest_rejects_two_negative_values (test_subtotal.SubtotalTests.test_rejects_two_negative_values) ... ok\ntest_single_item (test_subtotal.SubtotalTests.test_single_item) ... ok\ntest_sums_multiple_items (test_subtotal.SubtotalTests.test_sums_multiple_items) ... ok\ntest_zero_price_and_quantity (test_subtotal.SubtotalTests.test_zero_price_and_quantity) ... ok\n\n----------------------------------------------------------------------\nRan 22 tests in 0.000s\n\nOK\n"
+  },
+  {
+    "argv": [
+      "python3",
+      "/Users/farmerli/projects/local/coder-assistant-skill/tests/验证证据/并发工作区/整合验收.py",
+      "/private/tmp/coder-concurrency-2gzb45er/integration"
+    ],
+    "cwd": "/private/tmp/coder-concurrency-2gzb45er/integration",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "test_discount_behavior (__main__.IntegratedAcceptance.test_discount_behavior) ... ok\ntest_shipping_boundaries (__main__.IntegratedAcceptance.test_shipping_boundaries) ... ok\ntest_subtotal_behavior (__main__.IntegratedAcceptance.test_subtotal_behavior) ... ok\ntest_user_input_is_preserved (__main__.IntegratedAcceptance.test_user_input_is_preserved) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.000s\n\nOK\n"
+  },
+  {
+    "argv": [
+      "git",
+      "add",
+      "."
+    ],
+    "cwd": "/private/tmp/coder-concurrency-2gzb45er/integration",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "commit",
+      "-m",
+      "integrated fixture and direct delegation input"
+    ],
+    "cwd": "/private/tmp/coder-concurrency-2gzb45er/integration",
+    "exit_code": 0,
+    "stdout": "[integration cb97ead] integrated fixture and direct delegation input\n 5 files changed, 120 insertions(+), 3 deletions(-)\n create mode 100644 tests/test_discounted_total.py\n create mode 100644 tests/test_shipping_fee.py\n create mode 100644 tests/test_subtotal.py\n create mode 100644 二阶段任务.md\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "worktree",
+      "add",
+      "--detach",
+      "/private/tmp/coder-concurrency-2gzb45er/implementation-child",
+      "HEAD"
+    ],
+    "cwd": "/private/tmp/coder-concurrency-2gzb45er/integration",
+    "exit_code": 0,
+    "stdout": "HEAD is now at cb97ead integrated fixture and direct delegation input\n",
+    "stderr": "Preparing worktree (detached HEAD cb97ead)\n"
+  },
+  {
+    "argv": [
+      "git",
+      "status",
+      "--porcelain"
+    ],
+    "cwd": "/private/tmp/coder-concurrency-2gzb45er/integration",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "apply",
+      "--numstat",
+      "/private/tmp/coder-concurrency-2gzb45er/direct-child-evidence/payable-total.patch"
+    ],
+    "cwd": "/private/tmp/coder-concurrency-2gzb45er/integration",
+    "exit_code": 0,
+    "stdout": "3\t1\tmoney.py\n71\t0\ttests/test_payable_total.py\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "apply",
+      "--check",
+      "/private/tmp/coder-concurrency-2gzb45er/direct-child-evidence/payable-total.patch"
+    ],
+    "cwd": "/private/tmp/coder-concurrency-2gzb45er/integration",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "apply",
+      "/private/tmp/coder-concurrency-2gzb45er/direct-child-evidence/payable-total.patch"
+    ],
+    "cwd": "/private/tmp/coder-concurrency-2gzb45er/integration",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "cwd": "/private/tmp/coder-concurrency-2gzb45er/integration",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-v"
+    ],
+    "cwd": "/private/tmp/coder-concurrency-2gzb45er/integration",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "test_currency_code (test_baseline.BaselineTests.test_currency_code) ... ok\ntest_equal_reduction_returns_zero (test_discounted_total.DiscountedTotalTests.test_equal_reduction_returns_zero) ... ok\ntest_excess_reduction_returns_zero (test_discounted_total.DiscountedTotalTests.test_excess_reduction_returns_zero) ... ok\ntest_large_integer_total_stays_exact (test_discounted_total.DiscountedTotalTests.test_large_integer_total_stays_exact) ... ok\ntest_rejects_negative_amount (test_discounted_total.DiscountedTotalTests.test_rejects_negative_amount) ... ok\ntest_rejects_negative_reduction (test_discounted_total.DiscountedTotalTests.test_rejects_negative_reduction) ... ok\ntest_rejects_two_negative_values (test_discounted_total.DiscountedTotalTests.test_rejects_two_negative_values) ... ok\ntest_subtracts_reduction (test_discounted_total.DiscountedTotalTests.test_subtracts_reduction) ... ok\ntest_zero_amount (test_discounted_total.DiscountedTotalTests.test_zero_amount) ... ok\ntest_zero_reduction (test_discounted_total.DiscountedTotalTests.test_zero_reduction) ... ok\ntest_composes_existing_public_functions_in_order (test_payable_total.PayableTotalTests.test_composes_existing_public_functions_in_order) ... ok\ntest_empty_items_still_pay_shipping (test_payable_total.PayableTotalTests.test_empty_items_still_pay_shipping) ... ok\ntest_equal_or_excess_reduction_still_pays_shipping (test_payable_total.PayableTotalTests.test_equal_or_excess_reduction_still_pays_shipping) ... ok\ntest_large_integer_total_stays_exact (test_payable_total.PayableTotalTests.test_large_integer_total_stays_exact) ... ok\ntest_preserves_existing_negative_input_errors (test_payable_total.PayableTotalTests.test_preserves_existing_negative_input_errors) ... ok\ntest_shipping_threshold_uses_discounted_amount (test_payable_total.PayableTotalTests.test_shipping_threshold_uses_discounted_amount) ... ok\ntest_sums_items_then_adds_shipping_after_discount (test_payable_total.PayableTotalTests.test_sums_items_then_adds_shipping_after_discount) ... ok\ntest_zero_price_and_quantity (test_payable_total.PayableTotalTests.test_zero_price_and_quantity) ... ok\ntest_zero_reduction (test_payable_total.PayableTotalTests.test_zero_reduction) ... ok\ntest_amount_at_or_above_threshold_is_free (test_shipping_fee.ShippingFeeTests.test_amount_at_or_above_threshold_is_free) ... ok\ntest_amount_below_threshold_costs_ten (test_shipping_fee.ShippingFeeTests.test_amount_below_threshold_costs_ten) ... ok\ntest_negative_amount_is_rejected (test_shipping_fee.ShippingFeeTests.test_negative_amount_is_rejected) ... ok\ntest_empty_sequence (test_subtotal.SubtotalTests.test_empty_sequence) ... ok\ntest_large_integer_total_stays_exact (test_subtotal.SubtotalTests.test_large_integer_total_stays_exact) ... ok\ntest_rejects_negative_price (test_subtotal.SubtotalTests.test_rejects_negative_price) ... ok\ntest_rejects_negative_quantity (test_subtotal.SubtotalTests.test_rejects_negative_quantity) ... ok\ntest_rejects_negative_values_after_valid_item (test_subtotal.SubtotalTests.test_rejects_negative_values_after_valid_item) ... ok\ntest_rejects_two_negative_values (test_subtotal.SubtotalTests.test_rejects_two_negative_values) ... ok\ntest_single_item (test_subtotal.SubtotalTests.test_single_item) ... ok\ntest_sums_multiple_items (test_subtotal.SubtotalTests.test_sums_multiple_items) ... ok\ntest_zero_price_and_quantity (test_subtotal.SubtotalTests.test_zero_price_and_quantity) ... ok\n\n----------------------------------------------------------------------\nRan 31 tests in 0.001s\n\nOK\n"
+  },
+  {
+    "argv": [
+      "python3",
+      "/Users/farmerli/projects/local/coder-assistant-skill/tests/验证证据/并发工作区/整合验收.py",
+      "/private/tmp/coder-concurrency-2gzb45er/integration"
+    ],
+    "cwd": "/private/tmp/coder-concurrency-2gzb45er/integration",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "test_discount_behavior (__main__.IntegratedAcceptance.test_discount_behavior) ... ok\ntest_shipping_boundaries (__main__.IntegratedAcceptance.test_shipping_boundaries) ... ok\ntest_subtotal_behavior (__main__.IntegratedAcceptance.test_subtotal_behavior) ... ok\ntest_user_input_is_preserved (__main__.IntegratedAcceptance.test_user_input_is_preserved) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.000s\n\nOK\n"
+  },
+  {
+    "argv": [
+      "python3",
+      "/private/tmp/coder-concurrency-2gzb45er/direct_acceptance.py",
+      "/private/tmp/coder-concurrency-2gzb45er/integration"
+    ],
+    "cwd": "/private/tmp/coder-concurrency-2gzb45er/integration",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "test_composition_uses_public_helpers (__main__.DirectChildAcceptance.test_composition_uses_public_helpers) ... ok\ntest_real_boundaries (__main__.DirectChildAcceptance.test_real_boundaries) ... ok\n\n----------------------------------------------------------------------\nRan 2 tests in 0.000s\n\nOK\n"
+  }
+]

@@ -1,0 +1,17 @@
+退出码：1
+test_api_uses_public_service_boundary (test_architecture.OrderBoundaryTests.test_api_uses_public_service_boundary) ... FAIL
+
+======================================================================
+FAIL: test_api_uses_public_service_boundary (test_architecture.OrderBoundaryTests.test_api_uses_public_service_boundary)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/coder-assistant-v1-sfnsgn96/order_project/tests/test_architecture.py", line 17, in test_api_uses_public_service_boundary
+    self.assertFalse(node.attr.startswith("_"), "入口不访问其他对象的私有属性")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : 入口不访问其他对象的私有属性
+
+----------------------------------------------------------------------
+Ran 1 test in 0.002s
+
+FAILED (failures=1)
+

@@ -1,0 +1,81 @@
+{
+  "status": "passed",
+  "client_date": "2026-10-27",
+  "client_timezone": "Asia/Shanghai",
+  "python": "3.14.2 (main, Dec  5 2025, 16:49:16) [Clang 17.0.0 (clang-1700.4.4.1)]",
+  "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+  "environment_overrides": {
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "checks": [
+    {
+      "command": [
+        "python3",
+        "/Users/farmerli/.codex/skills/.system/skill-creator/scripts/quick_validate.py",
+        "/Users/farmerli/projects/local/coder-assistant-skill"
+      ],
+      "cwd": "/Users/farmerli/projects/local/coder-assistant-skill",
+      "exit_code": 0,
+      "stdout": "Skill is valid!\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/check_links.py",
+        "."
+      ],
+      "cwd": "/Users/farmerli/projects/local/coder-assistant-skill",
+      "exit_code": 0,
+      "stdout": "包内引用检查通过（限脚本支持的语法）。\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "cwd": "/Users/farmerli/projects/local/coder-assistant-skill",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "test_angle_bracket_target_supports_spaces (test_check_links.LinkCheckTests.test_angle_bracket_target_supports_spaces) ... ok\ntest_cannot_escape_package_even_if_file_exists (test_check_links.LinkCheckTests.test_cannot_escape_package_even_if_file_exists) ... ok\ntest_code_examples_and_external_urls_are_not_followed (test_check_links.LinkCheckTests.test_code_examples_and_external_urls_are_not_followed) ... ok\ntest_heading_inside_fence_does_not_satisfy_fragment (test_check_links.LinkCheckTests.test_heading_inside_fence_does_not_satisfy_fragment) ... ok\ntest_local_fragment_and_duplicate_heading_suffix (test_check_links.LinkCheckTests.test_local_fragment_and_duplicate_heading_suffix) ... ok\ntest_missing_file_reports_source_and_line (test_check_links.LinkCheckTests.test_missing_file_reports_source_and_line) ... ok\ntest_missing_heading_is_an_error (test_check_links.LinkCheckTests.test_missing_heading_is_an_error) ... ok\ntest_reports_each_broken_reference (test_check_links.LinkCheckTests.test_reports_each_broken_reference) ... ok\ntest_resolves_relative_files_and_unicode_encoded_headings (test_check_links.LinkCheckTests.test_resolves_relative_files_and_unicode_encoded_headings) ... ok\ntest_symlink_escape_is_rejected (test_check_links.LinkCheckTests.test_symlink_escape_is_rejected) ... ok\n\n----------------------------------------------------------------------\nRan 10 tests in 0.008s\n\nOK\n"
+    },
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/fixtures/order_project/tests",
+        "-v"
+      ],
+      "cwd": "/Users/farmerli/projects/local/coder-assistant-skill",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "test_api_uses_public_service_boundary (test_architecture.OrderBoundaryTests.test_api_uses_public_service_boundary) ... ok\ntest_missing_order_is_rejected_without_write (test_services.OrderServiceTests.test_missing_order_is_rejected_without_write) ... ok\ntest_order_id_remains_case_sensitive (test_services.OrderServiceTests.test_order_id_remains_case_sensitive) ... ok\ntest_owner_cancels_open_order (test_services.OrderServiceTests.test_owner_cancels_open_order) ... ok\ntest_repeat_cancel_does_not_write_twice (test_services.OrderServiceTests.test_repeat_cancel_does_not_write_twice) ... ok\ntest_shipped_order_is_rejected_without_write (test_services.OrderServiceTests.test_shipped_order_is_rejected_without_write) ... ok\ntest_stranger_is_rejected_without_write (test_services.OrderServiceTests.test_stranger_is_rejected_without_write) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.001s\n\nOK\n"
+    }
+  ],
+  "runtime_files_match_independently_tested_snapshot": true,
+  "original_fixture_scripts_and_historical_evidence_unchanged": true,
+  "protected_file_count": 19,
+  "archives": {
+    "反例完整工件.tar.gz": {
+      "sha256": "aa799db9a8dd883693bb1e6ebd07134f0693c3c820906966d05309280305d587",
+      "member_count": 38,
+      "safe_relative_members": true
+    },
+    "实现完整工件.tar.gz": {
+      "sha256": "f3c1c66fa468bc5929fcd32b1e87c5e5637c5f7aa944767af81970aa95688df3",
+      "member_count": 140,
+      "safe_relative_members": true
+    }
+  }
+}

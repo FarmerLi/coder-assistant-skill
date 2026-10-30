@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "python3",
+    "-B",
+    "tests/验证证据/审查重构/场景演练.py",
+    "/Users/farmerli/projects/local/coder-assistant-skill",
+    "/private/tmp/coder-review-refactor-08hzjf06/exercise"
+  ],
+  "cwd": "/Users/farmerli/projects/local/coder-assistant-skill",
+  "exit_code": 0,
+  "finished_at_utc": "2026-10-28T04:20:08.338160+00:00"
+}

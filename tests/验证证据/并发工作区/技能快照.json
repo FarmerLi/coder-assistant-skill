@@ -1,0 +1,22 @@
+{
+  "SKILL.md": "7dd5615abe2cd2f68c2b9bcb1b244dda28083ff406c433810da60080d13fbc9d",
+  "agents/openai.yaml": "22541efb935808b44824680b8b21f83ad78bb2823993389177098b25c6a4cb20",
+  "assets/开发交接模板.md": "a2e50c562fbc8d6cc67297f66de162ebe2c5a0c6e70445cff5dea1b5bb5e0d24",
+  "assets/自动检查配置示例.json": "03fddda801ebc8d161f93fbb97b227c8f6987e620ab2e95105a5308a9f93b465",
+  "references/agents/勘察.md": "1e38cc6e1b74889adbff27c41a9f38bacb17fdbca08e75f0a855b88ef35d56d7",
+  "references/agents/实现.md": "a1bbb6acb3cb86a181e5fa60571a0b6279235ed34d93ded0627db62477b5d9a3",
+  "references/agents/独立验证.md": "1c5cc9f4af83a4c3cc5da97c9b67eab2319e700f6a0322a932979e4e761a3aca",
+  "references/shared/execution-contract.md": "721385b60b010c12a7026701a75606845063f1f027130df417f2bcb50802b7af",
+  "references/shared/input-and-evidence.md": "12f6a9911a8c406def740c5d3a2e236e8731a00ea6e650a60d47e6eca643d146",
+  "references/shared/project-context.md": "e87b1f7c83cfd6e4c9f661fbeec561f01f032561fe9e0306f4442f3025e4b44c",
+  "references/shared/子代理协作.md": "19d7b95e7e0ee0650294dff52a7aafab24f8ea294abe9ef1cff247905113042f",
+  "references/shared/并发工作区.md": "5c34763b17e1ca145fdb8cf51f032430faae4d6893eb32c3bfe67332d9c45b18",
+  "references/workflows/architecture.md": "e61ad969174b5598181126d70af0d81bcfccb96651009d9a456650047a5a0b78",
+  "references/workflows/reuse.md": "b8c45b96b70079b4450eddea26772393693f5ec7e8f6754c81bd7e0a6ac5c659",
+  "references/workflows/tdd.md": "0771af454658c8c4ff1685703db8b8c303c15aab989cadcd5f2f859122db8f81",
+  "references/workflows/verification.md": "52652b7ca5a83186fdb673845d88380a0cf7d6f25d3019d66578ba3fbb7ac2da",
+  "references/workflows/代码审查.md": "43ea3bea31aca8421e25f3cd2193c172254274cd3071205fde73a9d34e9b6d05",
+  "references/workflows/自动检查.md": "2b5bc4d9ecb2c16712dd70c8e5aea9bc98847ac9427b22a2f88d1f17657bb389",
+  "scripts/check_links.py": "fc5d05e36817131ec82b3d7d6f7d42054ae65a70338c8abe65226bb19aa58170",
+  "scripts/run_review_checks.py": "13ef8406dcbd2f072059a5767a10454fafb3f77532a2b534202422427528c775"
+}

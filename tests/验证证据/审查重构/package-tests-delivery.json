@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "python3",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-p",
+    "test_*.py",
+    "-v"
+  ],
+  "cwd": "/Users/farmerli/projects/local/coder-assistant-skill",
+  "exit_code": 0,
+  "finished_at_utc": "2026-10-28T05:13:10.048136+00:00"
+}

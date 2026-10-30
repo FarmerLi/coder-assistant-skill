@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-p",
+    "test_review_checks.py",
+    "-v"
+  ],
+  "exit_code": 1
+}

@@ -1,0 +1,29 @@
+test_added_input_file_is_detected (test_review_checks.ReviewCheckTests.test_added_input_file_is_detected) ... ok
+test_arguments_are_not_interpreted_by_shell (test_review_checks.ReviewCheckTests.test_arguments_are_not_interpreted_by_shell) ... ok
+test_config_mutation_also_invalidates_success (test_review_checks.ReviewCheckTests.test_config_mutation_also_invalidates_success) ... ok
+test_created_evidence_ancestors_do_not_invalidate_project (test_review_checks.ReviewCheckTests.test_created_evidence_ancestors_do_not_invalidate_project) ... ok
+test_cwd_cannot_escape_project (test_review_checks.ReviewCheckTests.test_cwd_cannot_escape_project) ... ok
+test_deleted_empty_input_directory_invalidates_saved_pass (test_review_checks.ReviewCheckTests.test_deleted_empty_input_directory_invalidates_saved_pass) ... ok
+test_empty_checks_cannot_produce_green_result (test_review_checks.ReviewCheckTests.test_empty_checks_cannot_produce_green_result) ... ok
+test_executable_permission_change_invalidates_saved_pass (test_review_checks.ReviewCheckTests.test_executable_permission_change_invalidates_saved_pass) ... ok
+test_existing_evidence_is_not_overwritten (test_review_checks.ReviewCheckTests.test_existing_evidence_is_not_overwritten) ... ok
+test_failure_does_not_hide_later_check_results (test_review_checks.ReviewCheckTests.test_failure_does_not_hide_later_check_results) ... ok
+test_invalid_required_flag_and_duplicate_ids_are_rejected (test_review_checks.ReviewCheckTests.test_invalid_required_flag_and_duplicate_ids_are_rejected) ... ok
+test_later_edits_make_saved_pass_stale_without_rerunning_command (test_review_checks.ReviewCheckTests.test_later_edits_make_saved_pass_stale_without_rerunning_command) ... ok
+test_missing_executable_is_error_and_does_not_abort_batch (test_review_checks.ReviewCheckTests.test_missing_executable_is_error_and_does_not_abort_batch) ... ok
+test_optional_failure_is_visible_as_warning (test_review_checks.ReviewCheckTests.test_optional_failure_is_visible_as_warning) ... ok
+test_own_evidence_and_python_cache_do_not_stale_project (test_review_checks.ReviewCheckTests.test_own_evidence_and_python_cache_do_not_stale_project) ... ok
+test_path_escape_and_missing_inputs_are_rejected (test_review_checks.ReviewCheckTests.test_path_escape_and_missing_inputs_are_rejected) ... ok
+test_retargeted_file_link_invalidates_recursive_and_explicit_inputs (test_review_checks.ReviewCheckTests.test_retargeted_file_link_invalidates_recursive_and_explicit_inputs) ... ok
+test_source_mutation_invalidates_success (test_review_checks.ReviewCheckTests.test_source_mutation_invalidates_success) ... ok
+test_string_shell_command_is_rejected_before_execution (test_review_checks.ReviewCheckTests.test_string_shell_command_is_rejected_before_execution) ... ok
+test_success_keeps_real_output_and_input_manifest (test_review_checks.ReviewCheckTests.test_success_keeps_real_output_and_input_manifest) ... ok
+test_timeout_is_not_a_pass (test_review_checks.ReviewCheckTests.test_timeout_is_not_a_pass) ... ok
+test_timeout_stops_child_process_writes (test_review_checks.ReviewCheckTests.test_timeout_stops_child_process_writes) ... ok
+test_unchanged_saved_pass_is_current (test_review_checks.ReviewCheckTests.test_unchanged_saved_pass_is_current) ... ok
+test_verify_preserves_failure_and_original_report (test_review_checks.ReviewCheckTests.test_verify_preserves_failure_and_original_report) ... ok
+
+----------------------------------------------------------------------
+Ran 24 tests in 4.908s
+
+OK

@@ -1,0 +1,21 @@
+{
+  "SKILL.md": "59a9dca10d4a44b23e97de07cbc0b8104773eb0a5991acb026ded7c2e0d8a157",
+  "agents/openai.yaml": "22541efb935808b44824680b8b21f83ad78bb2823993389177098b25c6a4cb20",
+  "assets/开发交接模板.md": "e9375bd2c879495d8b39e88bc489212321afe296955f86aa6fdbb46e62e238e0",
+  "assets/自动检查配置示例.json": "03fddda801ebc8d161f93fbb97b227c8f6987e620ab2e95105a5308a9f93b465",
+  "references/agents/勘察.md": "78463c3589e155d834817c3c8307a9073aec44285413d94746c631c8f38c97f0",
+  "references/agents/实现.md": "edcbab3d66005488e160e63a1b4fc219ad3d8ddb87babc39f8c6fece1b5a63e7",
+  "references/agents/独立验证.md": "076d541d21cfb5d4258abb71599f08e9850c192098070b2e094624f6617b3862",
+  "references/shared/execution-contract.md": "721385b60b010c12a7026701a75606845063f1f027130df417f2bcb50802b7af",
+  "references/shared/input-and-evidence.md": "12f6a9911a8c406def740c5d3a2e236e8731a00ea6e650a60d47e6eca643d146",
+  "references/shared/project-context.md": "d56bcf78b93addc92bd194f43dcf4e20f4bc3f6931de8d906a673020cb8abca9",
+  "references/shared/子代理协作.md": "91c5a13f288f2ab9d3d7bac0d887cc8ee5791ee2874f99bd900f24644c9d9954",
+  "references/workflows/architecture.md": "e61ad969174b5598181126d70af0d81bcfccb96651009d9a456650047a5a0b78",
+  "references/workflows/reuse.md": "b8c45b96b70079b4450eddea26772393693f5ec7e8f6754c81bd7e0a6ac5c659",
+  "references/workflows/tdd.md": "0771af454658c8c4ff1685703db8b8c303c15aab989cadcd5f2f859122db8f81",
+  "references/workflows/verification.md": "d2d3fec6ef217313c6e6b9433a94091e069d4d215f78b8b478aa11d3c7420e4c",
+  "references/workflows/代码审查.md": "43ea3bea31aca8421e25f3cd2193c172254274cd3071205fde73a9d34e9b6d05",
+  "references/workflows/自动检查.md": "088c744744a3453a0939ee1a345f60fe91a8d7a57e9fb0479c225dbb498abc92",
+  "scripts/check_links.py": "fc5d05e36817131ec82b3d7d6f7d42054ae65a70338c8abe65226bb19aa58170",
+  "scripts/run_review_checks.py": "06d1381838708158e3e8eae2760328c05ddc6487143d957a00967b81f9cb0a61"
+}

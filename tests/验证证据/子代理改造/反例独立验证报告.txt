@@ -1,0 +1,46 @@
+# 独立验证报告
+
+## 结论
+
+当前改动**尚不满足原始任务**。发现 1 个本次引入的实质问题：取消入口绕过服务公开接口，直接读写服务私有存储，并在入口复制服务规则。常规业务输出与状态变化在本次运行中通过，但不能据此认为架构验收通过。
+
+## 输入、版本与只读范围
+
+- 原始要求：`review/project/项目说明.md` 的“用户任务”和“架构与任务约束”。
+- 实现：`review/project/order_app`；对照基线：`review/baseline`。
+- 代码与测试的逐文件 SHA-256、运行环境记录于 `input-manifest.json`；差异记录于 `baseline-current.diff`。差异只有修改 `order_app/api.py` 与新增 `tests/test_api.py`；服务、存储、领域对象及原有测试未变化。
+- 验证前后源文件散列一致，见 `read-only-check.json`。运行使用 `-B` 与 `PYTHONDONTWRITEBYTECODE=1`；所有新增验证脚本、日志和报告只存放于本 evidence 子目录。
+- 未读取相邻 implementation 目录、维护者其他测试或历史结论；未委派。
+
+## 问题 1：API 绕过服务公开取消接口，违反明确的责任边界
+
+- **位置：** `review/project/order_app/api.py:11` 直接调用 `self.service._store.get`，`:12–17` 重复权限与状态规则，`:18` 直接调用 `self.service._store.save`。
+- **要求依据：** 《项目说明.md》要求“订单状态、权限和重复请求规则由 OrderService 承担”“API 只能通过服务公开接口完成取消，不导入存储、不访问服务私有属性；存储读写由服务负责”。已有的 `OrderService.cancel`（`order_app/services.py:11–21`）完整提供该能力，且基线回归通过。
+- **成立条件：** 通过当前 `OrderAPI.cancel_order` 处理任何请求时均直接访问服务私有存储；成功取消 open 订单时直接保存，整个流程从未调用公开的 `OrderService.cancel`。
+- **可观察后果：** 原有服务边界检查由基线通过变为失败；独立运行时检查观察到成功取消并保存后，公开服务方法调用次数为 0，证明取消并未经过要求的服务入口。状态、权限及重复请求规则目前有两份实现，服务不再是 API 取消规则的唯一责任位置。
+- **实际证据：**
+  - `baseline-suite.log`：7 项全通过，退出码 0。
+  - `current-suite.log`：13 项中 12 项通过，`test_api_uses_public_service_boundary` 失败，错误为“入口不访问其他对象的私有属性”，退出码 1。
+  - `independent-acceptance.log`：`test_api_delegates_to_real_public_service_method` 失败，实际输出 `Expected 'cancel' to be called once. Called 0 times.`。该检查包装真实服务方法而不替换业务规则；同一用例也观察到正确响应与一次实际保存。
+- **归属：** 本次引入；基线 API 是尚未接入的入口，没有私有存储访问。
+- **修复方向：** 入口调用现有 `self.service.cancel(order_id, actor_id)`，仅将返回的订单投影为约定字典；移除入口中的存储访问和重复业务规则，无需修改已满足要求的服务。
+
+## 实际执行与覆盖
+
+命令、完整实际输出和退出码保存在各 `.log`，机器可读汇总见 `checks-results.json`。环境为 Python 3.14.2，具体解释器与平台见 `input-manifest.json`。
+
+| 执行项 | 结果 | 覆盖范围 |
+| --- | --- | --- |
+| 基线 `python3 -B -m unittest discover -s tests -v` | 7/7 通过 | 原有服务规则及服务边界 |
+| 当前项目同一测试入口 | 12/13 通过，1 项失败 | 新增 6 项接口行为、既有 6 项服务回归均通过；原有架构检查失败 |
+| evidence 中独立验收脚本 | 8/9 通过，1 项失败 | 正常取消及落库、重复调用只保存一次、初始已取消零写入、非所有者在 open/cancelled/shipped 状态下 PermissionError 且不变更、已发货和未知状态 ValueError 且不变更、不存在订单 KeyError 且不变更、订单大小写精确匹配与大小写不同 ID 共存；公开服务调用检查失败 |
+
+独立业务预期来自原始说明和现有公开契约，未通过复制实现算法计算预期。运行边界用例使用真实 `OrderService` 与真实 `MemoryOrderStore`，只给公开方法加调用观察包装。
+
+## 覆盖限制与未执行项
+
+- 没有维护者执行历史，不能证明其曾先执行新增接口用例的 RED；本报告只记录此次独立复跑及当前状态，不补写历史。
+- 验证仅针对本任务取消入口、直接相关服务/存储和原有回归；未评估未要求的计费、配送、优惠、并发、远端服务、HTTP 或部署行为。
+- 项目是标准库离线夹具，无前端、外部依赖、构建、数据库迁移或部署要求，因此未增加这些验收项。
+- 静态架构检查本身不能证明所有可能绕行均不存在；本次额外运行时检查直接验证了公开取消方法实际未被调用。
+- 未发现其他已证实的实质问题；没有另列非阻塞风格建议。

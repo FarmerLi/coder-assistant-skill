@@ -1,0 +1,31 @@
+# 订单取消入口交付摘要
+
+已按目标项目《项目说明.md》完成取消入口，未发现未解决的行为缺口。
+
+## 实际改动
+
+- `project/order_app/api.py:9-10`：调用既有公开 `OrderService.cancel`，从返回订单生成 `{"id": order.id, "status": order.status}`；服务错误自然透传。
+- 新增 `project/tests/test_api.py`：10 个接口测试覆盖成功、重复请求、初始已取消、非所有者、已发货、不存在、订单 ID 大小写，以及公开服务参数转发。
+- 相对实际基线，没有修改服务、存储、领域模型、原有测试或项目说明，没有删除文件。完整差异在 `final.diff`。
+
+## 已执行验证
+
+| 目录 | 实际命令 | 实际结果 |
+| --- | --- | --- |
+| `01-baseline` | `python3 -m unittest discover -s tests -v` | 7 项通过 |
+| `02-api-red` | `python3 -m unittest discover -s tests -p test_api.py -v` | 10 项因尚未实现的入口抛出 NotImplementedError，退出码 1 |
+| `03-api-green` | `python3 -m unittest discover -s tests -p test_api.py -v` | 10 项通过 |
+| `04-regression` | `python3 -m unittest discover -s tests -v` | 17 项通过 |
+| `05-independent-regression` | `python3 -m unittest discover -s tests -v` | 独立验证者运行，17 项通过 |
+| `06-independent-contract` | `python3 /private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/evidence/independent/check_contract.py` | 独立验证者运行，5 项补充验收通过 |
+| `07-final-review` | `python3 /private/tmp/coder-assistant-subagents-nxxgxsmo/implementation/evidence/final_review.py` | 仅核对最终差异与证据状态；确认最终项目和上述四次通过运行的快照一致 |
+
+各运行目录均保存命令和环境的 `result.json`、实际原始 `output.txt`、项目快照 `project/`、SHA-256 清单 `state.sha256.json`。没有回填未执行过的测试历史。独立补充脚本及其摘要保存在 `independent/`。
+
+## 真实委派与独立性
+
+- 通过 `collaboration.spawn_agent` 实际创建 `/root/behavior_implementation/independent_order_verification`，`fork_turns=none`；同时仅有 1 个该任务的验证子 agent，未继续嵌套委派。
+- 原始委派在 `independent-task.md`，状态记录在 `delegation.json`。曾观察到 running，之后收到最终报告并通过 `collaboration.list_agents` 观察到 completed；未把创建成功当作验证完成。
+- 验证者直接读取原始需求、最终代码及基线，完成代码审查和运行验收，报告为 `independent/report.md`。实现者随后读取报告、补充脚本、原始输出及状态清单，并核对整合后的最终状态。
+- 验证上下文没有继承实现推理或自评，但使用同一宿主和文件系统，写入边界由任务约定，没有操作系统强制只读隔离。独立报告只证明实际最终审查与运行范围，不独立证明历史 RED/GREEN；这些历史由各阶段原始证据记录。
+- 标准库离线样例未要求 HTTP、数据库或部署验收，未进行这些额外工作。没有修改技能快照、原技能仓库或远端。

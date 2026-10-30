@@ -1,0 +1,170 @@
+{
+  "method": "maintainer_exercise_not_independent_agent",
+  "finished_at_utc": "2026-10-28T04:20:08.334777+00:00",
+  "package": "/Users/farmerli/projects/local/coder-assistant-skill",
+  "output": "/private/tmp/coder-review-refactor-08hzjf06/exercise",
+  "records": [
+    {
+      "name": "clean-13",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/Users/farmerli/projects/local/coder-assistant-skill/scripts/run_review_checks.py",
+        "--project",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/project",
+        "--config",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/checks.json",
+        "--output",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/clean-13"
+      ],
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "name": "clean-current",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/Users/farmerli/projects/local/coder-assistant-skill/scripts/run_review_checks.py",
+        "--project",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/project",
+        "--verify",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/clean-13/result.json"
+      ],
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "name": "old-code-stale",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/Users/farmerli/projects/local/coder-assistant-skill/scripts/run_review_checks.py",
+        "--project",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/project",
+        "--verify",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/clean-13/result.json"
+      ],
+      "exit_code": 3,
+      "status": "stale"
+    },
+    {
+      "name": "missed-defect-13",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/Users/farmerli/projects/local/coder-assistant-skill/scripts/run_review_checks.py",
+        "--project",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/project",
+        "--config",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/checks.json",
+        "--output",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/missed-defect-13"
+      ],
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "name": "added-test-stale",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/Users/farmerli/projects/local/coder-assistant-skill/scripts/run_review_checks.py",
+        "--project",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/project",
+        "--verify",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/missed-defect-13/result.json"
+      ],
+      "exit_code": 3,
+      "status": "stale"
+    },
+    {
+      "name": "confirmed-defect-15",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/Users/farmerli/projects/local/coder-assistant-skill/scripts/run_review_checks.py",
+        "--project",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/project",
+        "--config",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/checks.json",
+        "--output",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/confirmed-defect-15"
+      ],
+      "exit_code": 1,
+      "status": "failed"
+    },
+    {
+      "name": "repair-stale",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/Users/farmerli/projects/local/coder-assistant-skill/scripts/run_review_checks.py",
+        "--project",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/project",
+        "--verify",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/confirmed-defect-15/result.json"
+      ],
+      "exit_code": 3,
+      "status": "stale"
+    },
+    {
+      "name": "repaired-15",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/Users/farmerli/projects/local/coder-assistant-skill/scripts/run_review_checks.py",
+        "--project",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/project",
+        "--config",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/checks.json",
+        "--output",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/repaired-15"
+      ],
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "name": "repaired-current",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/Users/farmerli/projects/local/coder-assistant-skill/scripts/run_review_checks.py",
+        "--project",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/project",
+        "--verify",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/repaired-15/result.json"
+      ],
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "name": "changed-config-stale",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/Users/farmerli/projects/local/coder-assistant-skill/scripts/run_review_checks.py",
+        "--project",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/project",
+        "--verify",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/repaired-15/result.json"
+      ],
+      "exit_code": 3,
+      "status": "stale"
+    },
+    {
+      "name": "restored-config-current",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/Users/farmerli/projects/local/coder-assistant-skill/scripts/run_review_checks.py",
+        "--project",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/project",
+        "--verify",
+        "/private/tmp/coder-review-refactor-08hzjf06/exercise/repaired-15/result.json"
+      ],
+      "exit_code": 0,
+      "status": "passed"
+    }
+  ]
+}

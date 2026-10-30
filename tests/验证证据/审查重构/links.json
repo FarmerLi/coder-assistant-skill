@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "python3",
+    "-B",
+    "scripts/check_links.py",
+    "."
+  ],
+  "cwd": "/Users/farmerli/projects/local/coder-assistant-skill",
+  "exit_code": 0,
+  "finished_at_utc": "2026-10-28T04:20:07.785525+00:00"
+}

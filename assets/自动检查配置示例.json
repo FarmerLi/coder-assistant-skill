@@ -1,0 +1,12 @@
+{
+  "inputs": ["order_app", "tests", "项目说明.md"],
+  "checks": [
+    {
+      "id": "regression",
+      "argv": ["python3", "-B", "-m", "unittest", "discover", "-s", "tests", "-v"],
+      "cwd": ".",
+      "required": true,
+      "timeout_seconds": 60
+    }
+  ]
+}

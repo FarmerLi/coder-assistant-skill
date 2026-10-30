@@ -1,0 +1,16 @@
+{
+  "SKILL.md": "f3315551d12099b912de60910dacf372bce15582fed6ee2b3a54e8785bdbfae4",
+  "agents/openai.yaml": "e43c725f7753709b9f2d07f7e21607be12a4e14904a835f0c8b8a4cde15b3696",
+  "assets/开发交接模板.md": "9c98c0a6292cd7f084ba0ec44603a9d7aa84cca90842c3fc37ab78e6bcfe25ea",
+  "references/agents/勘察.md": "78463c3589e155d834817c3c8307a9073aec44285413d94746c631c8f38c97f0",
+  "references/agents/实现.md": "edcbab3d66005488e160e63a1b4fc219ad3d8ddb87babc39f8c6fece1b5a63e7",
+  "references/agents/独立验证.md": "ce4f679c27b52865bf9adb7b80217dcc02a8b37181db40fc726385d5e781c25b",
+  "references/shared/execution-contract.md": "721385b60b010c12a7026701a75606845063f1f027130df417f2bcb50802b7af",
+  "references/shared/input-and-evidence.md": "12f6a9911a8c406def740c5d3a2e236e8731a00ea6e650a60d47e6eca643d146",
+  "references/shared/project-context.md": "cd2235de0bf61119f27b1eb702aa710daacf69e56fc471b5903e40d771489357",
+  "references/shared/子代理协作.md": "d269b3bf1eb61459ec3d00ea01fb4b478d2459ee4bed75f03b84083ae041b96a",
+  "references/workflows/architecture.md": "e61ad969174b5598181126d70af0d81bcfccb96651009d9a456650047a5a0b78",
+  "references/workflows/reuse.md": "b8c45b96b70079b4450eddea26772393693f5ec7e8f6754c81bd7e0a6ac5c659",
+  "references/workflows/tdd.md": "0771af454658c8c4ff1685703db8b8c303c15aab989cadcd5f2f859122db8f81",
+  "references/workflows/verification.md": "e59c8907bc2496c604da5db14f5a7699a3bf765d39ec273d652f5211c46d6b06"
+}

@@ -1,0 +1,202 @@
+test_added_input_file_is_detected (test_review_checks.ReviewCheckTests.test_added_input_file_is_detected) ... FAIL
+test_arguments_are_not_interpreted_by_shell (test_review_checks.ReviewCheckTests.test_arguments_are_not_interpreted_by_shell) ... FAIL
+test_config_mutation_also_invalidates_success (test_review_checks.ReviewCheckTests.test_config_mutation_also_invalidates_success) ... FAIL
+test_cwd_cannot_escape_project (test_review_checks.ReviewCheckTests.test_cwd_cannot_escape_project) ... ok
+test_empty_checks_cannot_produce_green_result (test_review_checks.ReviewCheckTests.test_empty_checks_cannot_produce_green_result) ... FAIL
+test_existing_evidence_is_not_overwritten (test_review_checks.ReviewCheckTests.test_existing_evidence_is_not_overwritten) ... ok
+test_failure_does_not_hide_later_check_results (test_review_checks.ReviewCheckTests.test_failure_does_not_hide_later_check_results) ... FAIL
+test_invalid_required_flag_and_duplicate_ids_are_rejected (test_review_checks.ReviewCheckTests.test_invalid_required_flag_and_duplicate_ids_are_rejected) ... ok
+test_later_edits_make_saved_pass_stale_without_rerunning_command (test_review_checks.ReviewCheckTests.test_later_edits_make_saved_pass_stale_without_rerunning_command) ... FAIL
+test_missing_executable_is_error_and_does_not_abort_batch (test_review_checks.ReviewCheckTests.test_missing_executable_is_error_and_does_not_abort_batch) ... FAIL
+test_optional_failure_is_visible_as_warning (test_review_checks.ReviewCheckTests.test_optional_failure_is_visible_as_warning) ... FAIL
+test_own_evidence_and_python_cache_do_not_stale_project (test_review_checks.ReviewCheckTests.test_own_evidence_and_python_cache_do_not_stale_project) ... FAIL
+test_path_escape_and_missing_inputs_are_rejected (test_review_checks.ReviewCheckTests.test_path_escape_and_missing_inputs_are_rejected) ... 
+  test_path_escape_and_missing_inputs_are_rejected (test_review_checks.ReviewCheckTests.test_path_escape_and_missing_inputs_are_rejected) (inputs=['../outside']) ... FAIL
+  test_path_escape_and_missing_inputs_are_rejected (test_review_checks.ReviewCheckTests.test_path_escape_and_missing_inputs_are_rejected) (inputs=['missing']) ... FAIL
+  test_path_escape_and_missing_inputs_are_rejected (test_review_checks.ReviewCheckTests.test_path_escape_and_missing_inputs_are_rejected) (inputs=[]) ... FAIL
+test_source_mutation_invalidates_success (test_review_checks.ReviewCheckTests.test_source_mutation_invalidates_success) ... FAIL
+test_string_shell_command_is_rejected_before_execution (test_review_checks.ReviewCheckTests.test_string_shell_command_is_rejected_before_execution) ... ok
+test_success_keeps_real_output_and_input_manifest (test_review_checks.ReviewCheckTests.test_success_keeps_real_output_and_input_manifest) ... FAIL
+test_timeout_is_not_a_pass (test_review_checks.ReviewCheckTests.test_timeout_is_not_a_pass) ... FAIL
+test_timeout_stops_child_process_writes (test_review_checks.ReviewCheckTests.test_timeout_stops_child_process_writes) ... FAIL
+test_unchanged_saved_pass_is_current (test_review_checks.ReviewCheckTests.test_unchanged_saved_pass_is_current) ... FAIL
+test_verify_preserves_failure_and_original_report (test_review_checks.ReviewCheckTests.test_verify_preserves_failure_and_original_report) ... FAIL
+
+======================================================================
+FAIL: test_added_input_file_is_detected (test_review_checks.ReviewCheckTests.test_added_input_file_is_detected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/farmerli/projects/local/coder-assistant-skill/tests/test_review_checks.py", line 108, in test_added_input_file_is_detected
+    self.assertEqual(result.returncode, 3)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 3
+
+======================================================================
+FAIL: test_arguments_are_not_interpreted_by_shell (test_review_checks.ReviewCheckTests.test_arguments_are_not_interpreted_by_shell)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/farmerli/projects/local/coder-assistant-skill/tests/test_review_checks.py", line 134, in test_arguments_are_not_interpreted_by_shell
+    self.assertEqual(result.returncode, 0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0
+
+======================================================================
+FAIL: test_config_mutation_also_invalidates_success (test_review_checks.ReviewCheckTests.test_config_mutation_also_invalidates_success)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/farmerli/projects/local/coder-assistant-skill/tests/test_review_checks.py", line 114, in test_config_mutation_also_invalidates_success
+    self.assertEqual(result.returncode, 3)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 3
+
+======================================================================
+FAIL: test_empty_checks_cannot_produce_green_result (test_review_checks.ReviewCheckTests.test_empty_checks_cannot_produce_green_result)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/farmerli/projects/local/coder-assistant-skill/tests/test_review_checks.py", line 120, in test_empty_checks_cannot_produce_green_result
+    self.assertEqual(report["status"], "configuration_error")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'not_implemented' != 'configuration_error'
+- not_implemented
++ configuration_error
+
+
+======================================================================
+FAIL: test_failure_does_not_hide_later_check_results (test_review_checks.ReviewCheckTests.test_failure_does_not_hide_later_check_results)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/farmerli/projects/local/coder-assistant-skill/tests/test_review_checks.py", line 65, in test_failure_does_not_hide_later_check_results
+    self.assertEqual(result.returncode, 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_later_edits_make_saved_pass_stale_without_rerunning_command (test_review_checks.ReviewCheckTests.test_later_edits_make_saved_pass_stale_without_rerunning_command)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/farmerli/projects/local/coder-assistant-skill/tests/test_review_checks.py", line 174, in test_later_edits_make_saved_pass_stale_without_rerunning_command
+    self.assertEqual(result.returncode, 0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0
+
+======================================================================
+FAIL: test_missing_executable_is_error_and_does_not_abort_batch (test_review_checks.ReviewCheckTests.test_missing_executable_is_error_and_does_not_abort_batch)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/farmerli/projects/local/coder-assistant-skill/tests/test_review_checks.py", line 79, in test_missing_executable_is_error_and_does_not_abort_batch
+    self.assertEqual(result.returncode, 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_optional_failure_is_visible_as_warning (test_review_checks.ReviewCheckTests.test_optional_failure_is_visible_as_warning)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/farmerli/projects/local/coder-assistant-skill/tests/test_review_checks.py", line 72, in test_optional_failure_is_visible_as_warning
+    self.assertEqual(result.returncode, 0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0
+
+======================================================================
+FAIL: test_own_evidence_and_python_cache_do_not_stale_project (test_review_checks.ReviewCheckTests.test_own_evidence_and_python_cache_do_not_stale_project)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/farmerli/projects/local/coder-assistant-skill/tests/test_review_checks.py", line 167, in test_own_evidence_and_python_cache_do_not_stale_project
+    self.assertEqual(result.returncode, 0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0
+
+======================================================================
+FAIL: test_path_escape_and_missing_inputs_are_rejected (test_review_checks.ReviewCheckTests.test_path_escape_and_missing_inputs_are_rejected) (inputs=['../outside'])
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/farmerli/projects/local/coder-assistant-skill/tests/test_review_checks.py", line 143, in test_path_escape_and_missing_inputs_are_rejected
+    self.assertEqual(report["status"], "configuration_error")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'not_implemented' != 'configuration_error'
+- not_implemented
++ configuration_error
+
+
+======================================================================
+FAIL: test_path_escape_and_missing_inputs_are_rejected (test_review_checks.ReviewCheckTests.test_path_escape_and_missing_inputs_are_rejected) (inputs=['missing'])
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/farmerli/projects/local/coder-assistant-skill/tests/test_review_checks.py", line 143, in test_path_escape_and_missing_inputs_are_rejected
+    self.assertEqual(report["status"], "configuration_error")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'not_implemented' != 'configuration_error'
+- not_implemented
++ configuration_error
+
+
+======================================================================
+FAIL: test_path_escape_and_missing_inputs_are_rejected (test_review_checks.ReviewCheckTests.test_path_escape_and_missing_inputs_are_rejected) (inputs=[])
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/farmerli/projects/local/coder-assistant-skill/tests/test_review_checks.py", line 143, in test_path_escape_and_missing_inputs_are_rejected
+    self.assertEqual(report["status"], "configuration_error")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'not_implemented' != 'configuration_error'
+- not_implemented
++ configuration_error
+
+
+======================================================================
+FAIL: test_source_mutation_invalidates_success (test_review_checks.ReviewCheckTests.test_source_mutation_invalidates_success)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/farmerli/projects/local/coder-assistant-skill/tests/test_review_checks.py", line 101, in test_source_mutation_invalidates_success
+    self.assertEqual(result.returncode, 3)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 3
+
+======================================================================
+FAIL: test_success_keeps_real_output_and_input_manifest (test_review_checks.ReviewCheckTests.test_success_keeps_real_output_and_input_manifest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/farmerli/projects/local/coder-assistant-skill/tests/test_review_checks.py", line 52, in test_success_keeps_real_output_and_input_manifest
+    self.assertEqual(result.returncode, 0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0
+
+======================================================================
+FAIL: test_timeout_is_not_a_pass (test_review_checks.ReviewCheckTests.test_timeout_is_not_a_pass)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/farmerli/projects/local/coder-assistant-skill/tests/test_review_checks.py", line 84, in test_timeout_is_not_a_pass
+    self.assertEqual(result.returncode, 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_timeout_stops_child_process_writes (test_review_checks.ReviewCheckTests.test_timeout_stops_child_process_writes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/farmerli/projects/local/coder-assistant-skill/tests/test_review_checks.py", line 93, in test_timeout_stops_child_process_writes
+    self.assertEqual(result.returncode, 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_unchanged_saved_pass_is_current (test_review_checks.ReviewCheckTests.test_unchanged_saved_pass_is_current)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/farmerli/projects/local/coder-assistant-skill/tests/test_review_checks.py", line 192, in test_unchanged_saved_pass_is_current
+    self.assertEqual(result.returncode, 0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0
+
+======================================================================
+FAIL: test_verify_preserves_failure_and_original_report (test_review_checks.ReviewCheckTests.test_verify_preserves_failure_and_original_report)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/farmerli/projects/local/coder-assistant-skill/tests/test_review_checks.py", line 183, in test_verify_preserves_failure_and_original_report
+    self.assertEqual(result.returncode, 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+----------------------------------------------------------------------
+Ran 20 tests in 0.423s
+
+FAILED (failures=18)

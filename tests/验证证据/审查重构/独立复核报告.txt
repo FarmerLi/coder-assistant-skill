@@ -1,0 +1,87 @@
+# 审查流程重构独立复核
+
+累计确认 3 个实质问题（均为 P2），维护者修复后已全部独立复核解决；本次实际检查范围内剩余已确认问题为 0。最终运行现有 24 项测试及 21 个有边界补充断言，全部通过。审查者未修改技能包、现有测试或基线。原始发现和修复前证据保留如下，最终处置见文末。
+
+## 范围与独立性
+
+依据原始任务（深入阅读 Anthropic 审查文章，重构审查并结合自动化流程）、技能包源码及变更前副本检查。阅读范围包括主入口、审查方法、自动检查方法、独立验证角色、协作／验证／恢复说明、交接模板、示例配置、执行器和测试代码。未读取本轮维护者测试结果、历史验证记录、已有验证证据结论，以及 evidence、exercise 目录。本文结果来自本次实际阅读与执行。
+
+文章原文已通过官方页面阅读：[Solving code review at Anthropic](https://claude.dev/blog/solving-code-review-at-anthropic/)。本次改动覆盖了可执行证据、独立找错与确认、分层检查、风险决定深度、发现处置、增量复核和收敛约束。未把文章中特定组织的人审或合并政策强加为通用技能约束，这与通用技能定位一致。
+
+## 已确认问题
+
+### RC-1 — P2：可执行权限变化后，旧证据仍返回通过
+
+- 位置：`scripts/run_review_checks.py:61-62`（首次审查版本），`snapshot()` 对普通文件仅记录内容 SHA-256；`--verify` 据此判断输入是否变化。
+- 条件：输入包含可执行检查脚本，初次执行通过，之后仅移除其执行权限，内容保持不变。
+- 实际后果：输入已不能执行，但旧证据核实仍退出 0、状态 `passed`。若结束事件或 CI 按文档依赖 `--verify` 的退出码，可能把本应重验的检查误判为当前通过。
+- 独立复现：`inputs=["check.sh"]`，`argv=["./check.sh"]`，初始权限 0755，执行得到 0/passed；将权限改为 0644 后，核实旧报告得到 0/passed；用同一配置重新执行得到 1/failed，日志为 Permission denied。
+- 证据：`executable-mode/initial.stdout.json`、`executable-mode/verify-after-chmod.stdout.json`、`executable-mode/rerun-after-chmod.stdout.json` 及 `executable-mode/rerun/executable.log`。
+- 建议方向：输入清单纳入与运行结果有关的文件模式；复核不能只比较内容字节。
+
+### RC-2 — P2：删除已声明的空输入目录后，旧证据仍返回通过
+
+- 位置：`scripts/run_review_checks.py:58-60,137-138`（首次审查版本）。目录本身不写入清单；缺失路径记录为 `None`，而 `changed_paths()` 用 `.get()` 比较，缺键与 `None` 等价。
+- 条件：某个必需目录为空，被显式声明为 input；检查依赖该目录存在，初次执行通过，随后目录被删除。
+- 实际后果：旧证据核实仍退出 0、状态 `passed`、`changed_inputs=[]`；相同配置已不能合法运行。目录存在性是声明输入的项目状态，此变化不应被视作当前有效证据。
+- 独立复现：`inputs=["migrations"]`，检查执行 `assert Path("migrations").is_dir()`；初始报告 `inputs_before={}`、0/passed。删除该空目录后，核实旧报告仍为 0/passed；相同配置实际重跑得到 2/configuration_error，提示输入不存在。
+- 证据：`empty-input-directory/initial.stdout.json`、`empty-input-directory/verify-after-removal.stdout.json`、`empty-input-directory/rerun-after-removal.stdout.json`。
+- 建议方向：目录存在性应成为清单的一部分，并区分缺键和缺失路径；不要因目录没有普通文件而漏掉其删除。
+
+## 实际执行与结果
+
+1. `python3 -B tests/test_review_checks.py -v`：20 项通过。原始输出：`unit-tests.txt`。
+2. 使用本包 `assets/自动检查配置示例.json`，在本次创建的 `tests/fixtures/order_project` 隔离副本运行执行器：0/passed，8 个文件纳入输入清单，回归检查真实退出 0。原始输出与日志位于 `example-config/`。未把夹具业务约束当作通用技能约束。
+3. 独立补充 9 个断言全部符合预期：初次成功、普通文件内容变化失效、保存的必需项失败保持失败、非必需项失败保持警告、核实不重跑检查、检查期间修改内容失效、恢复原内容不复活原始 stale、检查配置变化失效、越界文件符号链接在命令执行前拒绝。汇总：`independent-cases.json`；逐项原始输出：`independent-cases/`。
+4. 检查 8 份相关 Markdown 中的 30 处本地链接：全部存在，结果位于 `links.json`。
+5. 对照变更前副本检查入口、角色、协作、恢复和交付的变更；未发现新增工作流之间的额外实质矛盾。自动检查、独立审查、运行验收与规定人审分别判断；无实际安装时不声称自动触发生效；发现处置、旧证据失效和默认 3 轮后的重新评估有一致定义。
+
+补充场景执行结束时执行器 SHA-256：`06d1381838708158e3e8eae2760328c05ddc6487143d957a00967b81f9cb0a61`。原始两项缺陷复现保留在独立子目录，以供修复前后对照。
+
+## 限制
+
+- 实际运行环境为 macOS/POSIX 与当前 Python 3；未验证 Windows 后代进程回收或所有 Python 版本。
+- 未连接真实 CI 或宿主事件入口，未安装钩子、推送、创建 PR、部署或操作远端；对 CI／结束事件部分仅核对文档和退出码契约。
+- 未重建历史 TDD RED 证据，也未把测试代码存在或通过等同于通用审查质量。
+- 没有对全部语言和外部服务做端到端验收；未声明依赖、环境变化和外部系统状态由文档明确交给主 agent 判断。
+- 除两项已复现缺陷外，未把假设性竞态、配置恶意篡改、纯风格偏好或已明确排除的缓存／外部环境跟踪作为已确认问题。
+
+
+## 第一轮修复独立复核
+
+- RC-1：原可执行权限复现改为返回 3/stale，`changed_inputs=["check.sh"]`；同一配置实际重跑仍因权限错误返回 1/failed。未变化时核实保持 0/passed。已在已检验范围内解决。
+- RC-2：原空目录删除复现改为返回 3/stale，`changed_inputs=["migrations"]`；同一配置重跑因输入不存在返回 2/configuration_error。已在已检验范围内解决。
+- 相关反例通过：多层项目内证据目录创建不会使正常输入过期；核实仍通过；在证据目录新建父目录的其他分支添加 `other.txt` 会正确返回 stale；schema_version 1 的证据被明确拒绝为 configuration_error。
+- 新版本 23 个现有测试独立实际执行通过，输出保存于 `recheck/unit-tests.txt`。未阅读维护者 RED/GREEN 记录或接受其自评作为正确性依据。
+- 本轮原始输出保存在 `recheck/`；断言汇总为 `recheck/summary.json`。本轮执行器 SHA-256：`9cc89bc50bf0a162af893ada6c75714a7f8b1201bec1ce05470f7f244934a4e4`。
+
+### RC-3 — P2：递归输入中的文件符号链接改指目标后，旧证据仍返回通过
+
+- 位置：`scripts/run_review_checks.py:65-67`（schema_version 2 首次修复版本）。普通文件符号链接被当作普通文件，记录的是目标的字节摘要与权限，未记录链接类型或指向。
+- 条件：`inputs=["."]` 递归覆盖项目；一个文件符号链接从项目内目标 A 改指项目内目标 B，两个目标文件的内容及权限相同，且两者早已在递归输入内。程序根据真实文件位置加载关联数据，链接指向变化会改变行为。
+- 实际后果：核实旧证据仍为 0/passed、changed_inputs=[]；相同命令实际重跑失败。此时变化属于声明输入中的链接身份，并非未声明外部依赖。
+- 独立复现：两个目录 one、two 中的 entry.py 字节相同，均使用 `Path(__file__).resolve().with_name("value.txt")` 加载同目录数据；两个数据文件不同，且一直纳入输入。根目录 entry.py 初指 one/entry.py，检查通过；改指 two/entry.py 后，核实仍通过，实际重跑为 1/failed，日志给出 `AssertionError: CHANGED`。
+- 证据：`recheck/symlink-retarget/initial.stdout.json`、`recheck/symlink-retarget/verify-after-retarget.stdout.json`、`recheck/symlink-retarget/rerun-after-retarget.stdout.json` 和 `recheck/symlink-retarget/rerun/check.log`。
+- 建议方向：追踪允许的文件符号链接本身的类型与目标，避免将同字节、同权限的不同目标视为同一输入状态；沿用越界链接与目录链接的现有边界。
+
+
+## 最后一轮有边界复核与最终处置
+
+本轮仅检查链接身份修复及其相邻反例，并确认前两项修复未受影响；没有扩大到全仓审计，未读取维护者结果记录。
+
+| 发现 | 最终处置 | 本轮独立证据 |
+|---|---|---|
+| RC-1：执行权限变化未失效 | 已修复并复验；权限 0755→0644 后核实返回 3/stale，准确列出 check.sh | `final-recheck/executable-mode/verify-after-chmod.stdout.json` |
+| RC-2：空输入目录删除未失效 | 已修复并复验；删除 migrations 后核实返回 3/stale，准确列出 migrations | `final-recheck/empty-input-directory/verify-after-removal.stdout.json` |
+| RC-3：文件链接改指未失效 | 已修复并复验；递归、显式两种输入均保留 entry.py 的链接身份，改指后返回 3/stale；实际重跑仍因已改变的数据行为而失败 | `final-recheck/symlink-recursive/`、`final-recheck/symlink-explicit/` |
+
+实际执行结果：
+
+- 同一链接未变化时，两种 input 形式均返回 0/passed。改指后的 `changed_inputs` 均为 `["entry.py"]`，证明识别的是链接状态变化，而非依赖目标文件发生字节变化。
+- 越界文件链接在递归和显式输入两种形式下，均在命令执行前以 2/configuration_error 拒绝，副作用标记未创建。
+- 直接选择目录链接、经目录链接选择内部文件、递归扫描遇到目录链接，均以 2/configuration_error 拒绝；显式选择真实目录则正常通过，与修订后的文档一致。
+- 多层证据目录及其本轮新建父目录仍不会使输入误报过期；父目录中其他文件添加后仍正确过期。
+- 本轮共执行 21 个独立预期断言，全部符合预期；逐项原始输出在 `final-recheck/`，汇总为 `final-recheck/summary.json`。
+- 现有 24 项测试本轮实际通过；原始输出：`final-recheck/unit-tests.txt`。
+
+最终被检执行器 SHA-256：`13ef8406dcbd2f072059a5767a10454fafb3f77532a2b534202422427528c775`。结论为三项已确认问题在实际检验范围内解决、无剩余已确认实质问题；前文列出的平台、真实 CI／事件接入和完整端到端覆盖限制继续适用。

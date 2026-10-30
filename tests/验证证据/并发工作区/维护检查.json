@@ -1,0 +1,88 @@
+[
+  {
+    "name": "技能格式",
+    "argv": [
+      "python3",
+      "/Users/farmerli/.codex/skills/.system/skill-creator/scripts/quick_validate.py",
+      "/Users/farmerli/projects/local/coder-assistant-skill"
+    ],
+    "exit_code": 0,
+    "stdout": "Skill is valid!\n",
+    "stderr": ""
+  },
+  {
+    "name": "包内引用",
+    "argv": [
+      "python3",
+      "/Users/farmerli/projects/local/coder-assistant-skill/scripts/check_links.py",
+      "/Users/farmerli/projects/local/coder-assistant-skill"
+    ],
+    "exit_code": 0,
+    "stdout": "包内引用检查通过（限脚本支持的语法）。\n",
+    "stderr": ""
+  },
+  {
+    "name": "维护测试",
+    "argv": [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-p",
+      "test_*.py",
+      "-v"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "test_angle_bracket_target_supports_spaces (test_check_links.LinkCheckTests.test_angle_bracket_target_supports_spaces) ... ok\ntest_cannot_escape_package_even_if_file_exists (test_check_links.LinkCheckTests.test_cannot_escape_package_even_if_file_exists) ... ok\ntest_code_examples_and_external_urls_are_not_followed (test_check_links.LinkCheckTests.test_code_examples_and_external_urls_are_not_followed) ... ok\ntest_heading_inside_fence_does_not_satisfy_fragment (test_check_links.LinkCheckTests.test_heading_inside_fence_does_not_satisfy_fragment) ... ok\ntest_local_fragment_and_duplicate_heading_suffix (test_check_links.LinkCheckTests.test_local_fragment_and_duplicate_heading_suffix) ... ok\ntest_missing_file_reports_source_and_line (test_check_links.LinkCheckTests.test_missing_file_reports_source_and_line) ... ok\ntest_missing_heading_is_an_error (test_check_links.LinkCheckTests.test_missing_heading_is_an_error) ... ok\ntest_reports_each_broken_reference (test_check_links.LinkCheckTests.test_reports_each_broken_reference) ... ok\ntest_resolves_relative_files_and_unicode_encoded_headings (test_check_links.LinkCheckTests.test_resolves_relative_files_and_unicode_encoded_headings) ... ok\ntest_symlink_escape_is_rejected (test_check_links.LinkCheckTests.test_symlink_escape_is_rejected) ... ok\ntest_added_input_file_is_detected (test_review_checks.ReviewCheckTests.test_added_input_file_is_detected) ... ok\ntest_arguments_are_not_interpreted_by_shell (test_review_checks.ReviewCheckTests.test_arguments_are_not_interpreted_by_shell) ... ok\ntest_config_mutation_also_invalidates_success (test_review_checks.ReviewCheckTests.test_config_mutation_also_invalidates_success) ... ok\ntest_created_evidence_ancestors_do_not_invalidate_project (test_review_checks.ReviewCheckTests.test_created_evidence_ancestors_do_not_invalidate_project) ... ok\ntest_cwd_cannot_escape_project (test_review_checks.ReviewCheckTests.test_cwd_cannot_escape_project) ... ok\ntest_deleted_empty_input_directory_invalidates_saved_pass (test_review_checks.ReviewCheckTests.test_deleted_empty_input_directory_invalidates_saved_pass) ... ok\ntest_empty_checks_cannot_produce_green_result (test_review_checks.ReviewCheckTests.test_empty_checks_cannot_produce_green_result) ... ok\ntest_executable_permission_change_invalidates_saved_pass (test_review_checks.ReviewCheckTests.test_executable_permission_change_invalidates_saved_pass) ... ok\ntest_existing_evidence_is_not_overwritten (test_review_checks.ReviewCheckTests.test_existing_evidence_is_not_overwritten) ... ok\ntest_failure_does_not_hide_later_check_results (test_review_checks.ReviewCheckTests.test_failure_does_not_hide_later_check_results) ... ok\ntest_invalid_required_flag_and_duplicate_ids_are_rejected (test_review_checks.ReviewCheckTests.test_invalid_required_flag_and_duplicate_ids_are_rejected) ... ok\ntest_later_edits_make_saved_pass_stale_without_rerunning_command (test_review_checks.ReviewCheckTests.test_later_edits_make_saved_pass_stale_without_rerunning_command) ... ok\ntest_missing_executable_is_error_and_does_not_abort_batch (test_review_checks.ReviewCheckTests.test_missing_executable_is_error_and_does_not_abort_batch) ... ok\ntest_optional_failure_is_visible_as_warning (test_review_checks.ReviewCheckTests.test_optional_failure_is_visible_as_warning) ... ok\ntest_own_evidence_and_python_cache_do_not_stale_project (test_review_checks.ReviewCheckTests.test_own_evidence_and_python_cache_do_not_stale_project) ... ok\ntest_path_escape_and_missing_inputs_are_rejected (test_review_checks.ReviewCheckTests.test_path_escape_and_missing_inputs_are_rejected) ... ok\ntest_retargeted_file_link_invalidates_recursive_and_explicit_inputs (test_review_checks.ReviewCheckTests.test_retargeted_file_link_invalidates_recursive_and_explicit_inputs) ... ok\ntest_source_mutation_invalidates_success (test_review_checks.ReviewCheckTests.test_source_mutation_invalidates_success) ... ok\ntest_string_shell_command_is_rejected_before_execution (test_review_checks.ReviewCheckTests.test_string_shell_command_is_rejected_before_execution) ... ok\ntest_success_keeps_real_output_and_input_manifest (test_review_checks.ReviewCheckTests.test_success_keeps_real_output_and_input_manifest) ... ok\ntest_timeout_is_not_a_pass (test_review_checks.ReviewCheckTests.test_timeout_is_not_a_pass) ... ok\ntest_timeout_stops_child_process_writes (test_review_checks.ReviewCheckTests.test_timeout_stops_child_process_writes) ... ok\ntest_unchanged_saved_pass_is_current (test_review_checks.ReviewCheckTests.test_unchanged_saved_pass_is_current) ... ok\ntest_verify_preserves_failure_and_original_report (test_review_checks.ReviewCheckTests.test_verify_preserves_failure_and_original_report) ... ok\n\n----------------------------------------------------------------------\nRan 34 tests in 4.243s\n\nOK\n"
+  },
+  {
+    "name": "原始夹具",
+    "argv": [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests/fixtures/order_project/tests",
+      "-v"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "test_api_uses_public_service_boundary (test_architecture.OrderBoundaryTests.test_api_uses_public_service_boundary) ... ok\ntest_missing_order_is_rejected_without_write (test_services.OrderServiceTests.test_missing_order_is_rejected_without_write) ... ok\ntest_order_id_remains_case_sensitive (test_services.OrderServiceTests.test_order_id_remains_case_sensitive) ... ok\ntest_owner_cancels_open_order (test_services.OrderServiceTests.test_owner_cancels_open_order) ... ok\ntest_repeat_cancel_does_not_write_twice (test_services.OrderServiceTests.test_repeat_cancel_does_not_write_twice) ... ok\ntest_shipped_order_is_rejected_without_write (test_services.OrderServiceTests.test_shipped_order_is_rejected_without_write) ... ok\ntest_stranger_is_rejected_without_write (test_services.OrderServiceTests.test_stranger_is_rejected_without_write) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.000s\n\nOK\n"
+  },
+  {
+    "name": "隔离机制演练",
+    "argv": [
+      "python3",
+      "/Users/farmerli/projects/local/coder-assistant-skill/tests/验证证据/并发工作区/隔离场景.py"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "test_dirty_input_and_review_snapshot_stay_independent (__main__.IsolationScenarios.test_dirty_input_and_review_snapshot_stay_independent) ... ok\ntest_overlapping_changes_require_explicit_resolution (__main__.IsolationScenarios.test_overlapping_changes_require_explicit_resolution) ... ok\ntest_same_branch_is_not_force_checked_out_twice (__main__.IsolationScenarios.test_same_branch_is_not_force_checked_out_twice) ... ok\ntest_shared_sqlite_database_separates_test_namespaces (__main__.IsolationScenarios.test_shared_sqlite_database_separates_test_namespaces) ... ok\ntest_two_processes_queue_for_one_shared_mutable_resource (__main__.IsolationScenarios.test_two_processes_queue_for_one_shared_mutable_resource) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 0.800s\n\nOK\n"
+  },
+  {
+    "name": "最终技能格式",
+    "argv": [
+      "python3",
+      "/Users/farmerli/.codex/skills/.system/skill-creator/scripts/quick_validate.py",
+      "/Users/farmerli/projects/local/coder-assistant-skill"
+    ],
+    "exit_code": 0,
+    "stdout": "Skill is valid!\n",
+    "stderr": ""
+  },
+  {
+    "name": "最终包内引用",
+    "argv": [
+      "python3",
+      "/Users/farmerli/projects/local/coder-assistant-skill/scripts/check_links.py",
+      "/Users/farmerli/projects/local/coder-assistant-skill"
+    ],
+    "exit_code": 0,
+    "stdout": "包内引用检查通过（限脚本支持的语法）。\n",
+    "stderr": ""
+  }
+]

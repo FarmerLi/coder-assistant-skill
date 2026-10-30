@@ -1,0 +1,15 @@
+{
+  "command": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-p",
+    "test_review_checks.py",
+    "-v"
+  ],
+  "cwd": "/Users/farmerli/projects/local/coder-assistant-skill",
+  "exit_code": 1
+}
