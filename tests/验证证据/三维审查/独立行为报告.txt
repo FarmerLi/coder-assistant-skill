@@ -1,0 +1,144 @@
+# coder-assistant 技能行为演练报告
+
+本轮确认 2 项实质缺陷：case_a 的组合支付绕过与 case_c 的公开报告越权。case_b 没有新增实质发现，不需要因 rebase 改变提交哈希而全量重审。三个案例均只读审查；未修改源夹具、技能包或原仓库，未执行 Git 操作、目标更新、提交、合并或外部服务调用。
+
+## 方法与证据边界
+
+使用 `/tmp/coder-review-validation/skill/SKILL.md`，按需读取代码审查、自动检查、验证与交接、回合并、输入与证据、工作区与输入和独立验证角色说明。使用文件内容 SHA-256 绑定证据，没有 Git 提交可供核对，不编造提交标识。源材料仅存在小型 Python 文件和请求，没有项目测试入口，因而新增隔离验证脚本 `validate.py`，直接调用夹具真实函数，无第三方依赖，使用 `-B` 防止写入源目录字节码。
+
+本验证者收到原始请求、代码快照和技能后独立判断，没有实现者推理或预设缺陷清单；本轮未再次委派。历史证据的事实来自各案例 request.md，仅在明确前提仍成立时复用，不声称本轮重跑了那些历史检查。每个案例执行前后比较全部源夹具摘要，均得到 `fixture_unchanged: true`；摘要保存在原始输出末行。
+
+## case_a：1 项 P1 缺陷，不能进入目标更新
+
+**A1：取消请求登记后，公开 checkout 仍成功支付。** 位置：`case_a/candidate/checkout.py:2-4`，关联 `candidate/cancel.py:2`、`candidate/pay.py:2`。
+
+触发条件：订单起始 `status=pending`，调用 cancel 登记 `cancel_requested=True`，再从公开 checkout 支付。预期是拒绝且订单状态保持 pending；实际无异常并把状态改为 paid。该缺陷阻断明确验收，应修复并复验，当前尚未修复。不能借用 task 的 cancel→pay 通过或 target 的 pending→checkout 通过作为整合候选通过证据。
+
+来源与组合原因：task 将取消从写 cancelled 改为登记请求，并只在 pay 增加请求标记检查；target 把 checkout 从委托 pay 改为自行判断状态并写 paid。两侧修改不同文件，但共享订单状态与支付规则，候选 checkout 绕过了 pay 的新检查。本次独立复审触发依据是目标改变同一调用链／共享状态规则、旧证据未覆盖组合；无需 Git 文本冲突即可触发。归属为本次整合引入的行为缺陷，不能仅按 target 的原有代码排除。
+
+本轮实际执行：base、task、target、candidate 的 pending→pay、pending→checkout、cancel→pay、cancel→checkout；另验证 task 与 candidate 的 cancel 只登记请求且不改变状态。18 项行为检查，17 项通过、1 项失败；失败仅为 candidate cancel→checkout。base/target 的取消状态仍为 cancelled，是旧快照行为，不拿它们证明新取消需求成立。candidate 的 5 项中 4 项通过。
+
+| 维度 | 覆盖 | 证据与结论 |
+|---|---|---|
+| 需求正确性 | 已检查 | candidate 取消登记及两个支付入口；checkout 拒绝与不变更状态验收失败 |
+| 系统一致性 | 已检查 | 比较四份快照与真实调用链；target 去掉 pay 复用后遗漏共享支付规则 |
+| 回归与交互 | 已检查 | 正常支付、取消后支付、两侧单独状态与实际组合；组合失败 |
+
+并发处理不适用：原始需求明确无并发要求，未添加并发测试或以此阻塞。没有真实支付服务、持久化或更多入口材料，结论限于所给函数快照。修复后需重验取消后两个入口均拒绝且不改变状态、正常支付仍可用；本轮依审查授权没有修改代码。目标保持未更新。
+
+## case_b：0 项实质发现，复用有效证据，保留目标检查
+
+本轮实际执行文件集合与字节比较：reviewed 和 candidate 的 `format_id.py` 完全相同，SHA-256 均为 `1caf457572891c9e1e5f1f4991fc539cde68c529396aad9d62e5d74556cc459e`；changed=[]、added=[notes.md]、removed=[]。notes.md 只有会议时间说明，材料明确不参与构建、运行或生成。需求、环境、依赖、规则未改变来自 request.md；无相关反证。
+
+原有三维新上下文审查，以及 0→0000、42→0042、12345→12345 的通过，均是提供的历史证据。本轮核实其适用前提后复用，没有重跑三个行为用例，也没有为哈希变化要求全量独立重审。提交哈希改变不等于语义改变；无关文档新增不使全部旧证据失效。
+
+| 维度 | 覆盖 | 证据与结论 |
+|---|---|---|
+| 需求正确性 | 已检查（复用） | reviewed 历史审查与三个通过用例；受审代码字节相同 |
+| 系统一致性 | 已检查（复用并核对差异） | 本轮比较只新增无关 notes.md；已知依赖和运行条件未变 |
+| 回归与交互 | 已检查（复用）；目标状态未验证 | 当前候选可复用历史回归；项目规定的快进后目标检查尚未执行 |
+
+还需完成的必要检查：将来在已获授权且实际完成目标快进后，于目标工作区运行 0、42、12345 三个用例，结果绑定目标最终状态。当前仅是快照且用户禁止合并，目标未更新，不能提前执行或称合并后检查通过。此项是交付完成的未完成步骤，不是要求提前全量重审候选的新门槛。没有证据阻止候选因本轮差异进入后续目标更新流程，但本轮不执行 Git 前置检查或更新，也不声称“已合并／已完成目标验证”。
+
+## case_c：1 项 P1 缺陷，重新打开 R1；R2 保持有意行为
+
+**R1：已确认公开报告越权，未解决。** 位置：`case_c/public_api.py:2-3`，关联 `case_c/service.py:1-2`。公开入口 get_report 直接把 user、报告 owner 与内容传给不做权限判断的 service；无任何层比较 user 与 owner。本轮以 owner=alice、user=bob 调用真实 get_report，实际返回 `private report`，违反只允许所有者读取的明确需求。所有者 alice 的正常读取通过。两个行为检查 1 通过、1 失败。
+
+历史处置前提是“所有内部调用方已验证所有者”，失效条件是“新增未校验调用方”。新增 public_api 正好触发该条件；本轮先将 R1 从历史误报标为需复核，经调用链与运行复现后确认为本次公开入口引入的权限缺陷。service 无检查是既有代码，但其危险路径由本次新增入口暴露，不应沿用旧误报结论。R1 保留同一标识追溯，当前分类为已确认缺陷、尚未修复；没有误报、已解决或接受风险的证据。
+
+开发备注只表达实施者便利偏好，不是业务要求，也不构成有权决定者的风险接受。不能把 R1 改称“接受的已知缺陷”。本轮处置是要求修复并复验公开入口的非所有者拒绝与所有者正常读取；审查任务不自行修复。若未来存在真实接受决定，仍必须保留缺陷身份、影响、决定者、依据、范围和失效条件，不能冒充已修复。
+
+**R2：继续复用有意行为记录，不重复提缺陷。** 适用位置为 `case_c/format_id.py:1-2`，行为是超过四位不截断。有效兼容要求明确允许该行为；本轮静态确认 `str(value).zfill(4)` 与此一致，相关代码、需求与调用方未变由原始请求明确提供。记录分类维持有意行为、处置有效，不作为缺陷。失效条件为相关需求、实现、调用方或输入约定变化；未来仅复核受影响部分。本轮没有重跑 format_id 行为测试，也没有制造无关的兼容性问题。
+
+| 维度 | 覆盖 | 证据与结论 |
+|---|---|---|
+| 需求正确性 | 已检查 | 公开所有者正常读取通过；非所有者读取失败，已复现泄露 |
+| 系统一致性 | 已检查（公开链路）；旧内部链路未直接验证 | public_api→service 未授权；旧内部调用方未提供源码，其仍存在且已校验是请求给定事实 |
+| 回归与交互 | 已检查公开入口的拒绝/允许交互；部分历史证据复用 | 所有者可读；新增调用方使 R1 前提失效；R2 不受影响；未直接运行未提供的旧内部链路 |
+
+结论限于实际 Python 公开入口契约，没有 HTTP 服务、认证框架或更多调用方材料，未执行真实网络端到端验证。缺陷已有确定调用链和运行证据，不需要等待这些材料才能判定；也不自动扩展为全仓安全审计。
+
+## 执行记录与原始工件
+
+新增工件仅在 `/tmp/coder-review-validation`：`validate.py`、`execution.json`、`case_a.stdout.log`、`case_a.stderr.log`、`case_b.stdout.log`、`case_b.stderr.log`、`case_c.stdout.log`、`case_c.stderr.log` 和本报告。脚本按 case_a、case_b、case_c 顺序执行。
+
+验证命令、工作目录、起止时间、退出码和环境如下；完整标准输出（含所有断言和源摘要）见对应日志，三个 stderr 日志均为空。退出码 1 表示已实际发现业务断言失败，不是环境/工具执行失败；外层采集器退出 0 仅表示日志采集成功，不能替代三个子检查退出码。
+
+### case_a
+
+```text
+/opt/homebrew/opt/python@3.14/bin/python3.14 -B /tmp/coder-review-validation/validate.py case_a
+```
+
+- cwd: /tmp/coder-review-validation
+- start: 2026-11-01T12:27:32.838626+00:00
+- end: 2026-11-01T12:27:32.867254+00:00
+- exit_code: 1
+- python: 3.14.2 (main, Dec  5 2025, 16:49:16) [Clang 17.0.0 (clang-1700.4.4.1)]
+- platform: macOS-26.6.2-arm64-arm-64bit-Mach-O
+
+关键原始输出：
+
+```jsonl
+{"state": "base", "scenario": "pending -> pay", "pass": true, "actual": {"status": "paid"}}
+{"state": "base", "scenario": "cancel -> pay", "pass": true, "rejected": true, "before": {"status": "cancelled"}, "after": {"status": "cancelled"}}
+{"state": "base", "scenario": "pending -> checkout", "pass": true, "actual": {"status": "paid"}}
+{"state": "base", "scenario": "cancel -> checkout", "pass": true, "rejected": true, "before": {"status": "cancelled"}, "after": {"status": "cancelled"}}
+{"state": "task", "scenario": "pending -> pay", "pass": true, "actual": {"status": "paid"}}
+{"state": "task", "scenario": "cancel -> pay", "pass": true, "rejected": true, "before": {"status": "pending", "cancel_requested": true}, "after": {"status": "pending", "cancel_requested": true}}
+{"state": "task", "scenario": "pending -> checkout", "pass": true, "actual": {"status": "paid"}}
+{"state": "task", "scenario": "cancel -> checkout", "pass": true, "rejected": true, "before": {"status": "pending", "cancel_requested": true}, "after": {"status": "pending", "cancel_requested": true}}
+{"state": "task", "scenario": "cancel registers without status change", "pass": true, "actual": {"status": "pending", "cancel_requested": true}}
+{"state": "target", "scenario": "pending -> pay", "pass": true, "actual": {"status": "paid"}}
+{"state": "target", "scenario": "cancel -> pay", "pass": true, "rejected": true, "before": {"status": "cancelled"}, "after": {"status": "cancelled"}}
+{"state": "target", "scenario": "pending -> checkout", "pass": true, "actual": {"status": "paid"}}
+{"state": "target", "scenario": "cancel -> checkout", "pass": true, "rejected": true, "before": {"status": "cancelled"}, "after": {"status": "cancelled"}}
+{"state": "candidate", "scenario": "pending -> pay", "pass": true, "actual": {"status": "paid"}}
+{"state": "candidate", "scenario": "cancel -> pay", "pass": true, "rejected": true, "before": {"status": "pending", "cancel_requested": true}, "after": {"status": "pending", "cancel_requested": true}}
+{"state": "candidate", "scenario": "pending -> checkout", "pass": true, "actual": {"status": "paid"}}
+{"state": "candidate", "scenario": "cancel -> checkout", "pass": false, "rejected": false, "before": {"status": "pending", "cancel_requested": true}, "after": {"status": "paid", "cancel_requested": true}}
+{"state": "candidate", "scenario": "cancel registers without status change", "pass": true, "actual": {"status": "pending", "cancel_requested": true}}
+```
+
+### case_b
+
+```text
+/opt/homebrew/opt/python@3.14/bin/python3.14 -B /tmp/coder-review-validation/validate.py case_b
+```
+
+- cwd: /tmp/coder-review-validation
+- start: 2026-11-01T12:27:32.878762+00:00
+- end: 2026-11-01T12:27:32.898995+00:00
+- exit_code: 0
+- python: 3.14.2 (main, Dec  5 2025, 16:49:16) [Clang 17.0.0 (clang-1700.4.4.1)]
+- platform: macOS-26.6.2-arm64-arm-64bit-Mach-O
+
+关键原始输出：
+
+```jsonl
+{"scenario": "snapshot comparison", "pass": true, "changed": [], "added": ["notes.md"], "removed": []}
+{"reused_historical_tests": [0, 42, 12345], "rerun_here": false, "reason": "identical source; supplied requirements/environment/dependencies/rules unchanged", "target_worktree_tests": "NOT RUN; target not updated and merge not authorized"}
+```
+
+### case_c
+
+```text
+/opt/homebrew/opt/python@3.14/bin/python3.14 -B /tmp/coder-review-validation/validate.py case_c
+```
+
+- cwd: /tmp/coder-review-validation
+- start: 2026-11-01T12:27:32.899227+00:00
+- end: 2026-11-01T12:27:32.920046+00:00
+- exit_code: 1
+- python: 3.14.2 (main, Dec  5 2025, 16:49:16) [Clang 17.0.0 (clang-1700.4.4.1)]
+- platform: macOS-26.6.2-arm64-arm-64bit-Mach-O
+
+关键原始输出：
+
+```jsonl
+{"scenario": "public report read", "user": "alice", "pass": true, "result": "private report", "error": null}
+{"scenario": "public report read", "user": "bob", "pass": false, "result": "private report", "error": null}
+{"R2": "reused intentional-behavior record; relevant source, requirement, callers unchanged per request", "behavior_test_rerun": false}
+```
+
+阅读与定位另执行了 `rg --files`、`cat` 读取上述技能/请求/引用，以及 `python3 -B` 逐行打印三组夹具并计算摘要；均为只读。脚本和报告通过本地文件写入生成。没有测试技能发现、变更 Git 状态或尝试绕过授权边界。
