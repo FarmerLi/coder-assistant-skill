@@ -5,7 +5,7 @@
 在目标项目中打开 Agent，发送：
 
 ```text
-请读取 https://github.com/FarmerLi/coder-assistant-skill 仓库中的《安装与更新.md》，将 coder-assistant 安装到当前项目；已有安装则更新到最新可用版本。优先使用最新正式 Release；若仓库尚无正式 Release，则使用默认分支 main 的最新提交，并明确标为开发版。请完成版本检查、完整包下载、必要的备份替换和安装校验，并报告版本、提交与安装位置。
+请读取 https://github.com/FarmerLi/coder-assistant-skill 仓库中的《installation.md》，将 coder-assistant 安装到当前项目；已有安装则更新到最新可用版本。优先使用最新正式 Release；若仓库尚无正式 Release，则使用默认分支 main 的最新提交，并明确标为开发版。请完成版本检查、完整包下载、必要的备份替换和安装校验，并报告版本、提交与安装位置。
 ```
 
 默认安装到目标项目的 `.agents/skills/coder-assistant/`。个人全局安装时补充“安装到个人全局目录”；固定版本时补充“使用 Tag vX.Y.Z”；开发期间可明确指定分支或提交；修复同一版本的安装时可要求“强制重装，保留旧目录备份”。
@@ -62,7 +62,7 @@ Release 接口返回 404 可判断为没有最新正式 Release；网络失败�
 
 1. 通过 HTTPS 下载 `https://api.github.com/repos/FarmerLi/coder-assistant-skill/zipball/<完整提交SHA>`，跟随归档重定向。先固定 SHA 再下载，避免分支或 Tag 在查询与下载之间变化。
 2. 在临时目录接收归档，检查 HTTP 状态并用现有归档工具完成解压及完整性检查。拒绝错误响应、损坏归档、绝对路径、越界 `..`、符号链接等非常规条目。
-3. 在目标所在文件系统、技能发现目录之外准备暂存目录。去掉归档最外层包装目录，将内部全部内容放入暂存目录，保留相对路径及中文文件名。不要只下载 `SKILL.md`，也不要额外嵌套一层仓库名。
+3. 在目标所在文件系统、技能发现目录之外准备暂存目录。去掉归档最外层包装目录，将内部全部内容放入暂存目录，保留归档中的相对路径和文件名。不要只下载 `SKILL.md`，也不要额外嵌套一层仓库名。
 4. 按“安装校验”检查暂存内容，写入本次安装记录。下载或检查失败时保留旧安装。
 
 使用环境已有工具即可，不要求新的包管理器。安装目录是普通文件目录，不使用 `git clone`、`git submodule` 或嵌套 Git 仓库。
@@ -101,7 +101,7 @@ Release 接口返回 404 可判断为没有最新正式 Release；网络失败�
 默认校验聚焦“包可安装、入口可读、来源可追溯”：
 
 - 暂存目录和最终位置直接包含可读取的 `SKILL.md`，front matter 中 `name` 为 `coder-assistant`。
-- `references/`、`assets/`、`scripts/`、`tests/` 和 `agents/openai.yaml` 存在；关键入口 [SKILL.md](SKILL.md)、[开发交接模板](assets/开发交接模板.md)与[行为验证](tests/行为验证.md)可读取。
+- `references/`、`assets/`、`scripts/`、`tests/` 和 `agents/openai.yaml` 存在；关键入口 [SKILL.md](SKILL.md)、[开发交接模板](assets/development-handoff-template.md)与[行为验证](tests/behavior-validation.md)可读取。
 - 没有 `.git`、子模块或额外仓库包装层。
 - 安装记录与本次实际选择的版本、ref 和提交一致。
 - 有实际下载时，归档解压及完整性检查通过；最终目录由已校验的暂存目录整体移动得到。
