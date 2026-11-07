@@ -14,7 +14,7 @@
 
 ## 执行方式与隔离
 
-本次维护者先固定技能快照和原始夹具，再用 `fork_turns=none` 启动独立执行 agent。执行者只收到技能入口、真实任务、原始项目材料和允许的副作用范围，没有收到预期实现、疑似缺陷或维护者结论。所有业务改动发生在 `/private/tmp/coder-assistant-subagents-nxxgxsmo` 的副本，原始[订单样例](fixtures/order_project/项目说明.md)保持不变。
+本次维护者先固定技能快照和原始夹具，再用 `fork_turns=none` 启动独立执行 agent。执行者只收到技能入口、真实任务、原始项目材料和允许的副作用范围，没有收到预期实现、疑似缺陷或维护者结论。所有业务改动发生在 `/private/tmp/coder-assistant-subagents-nxxgxsmo` 的副本，原始[订单样例](fixtures/order_project/scenario.md)保持不变。
 
 - 正常开发执行者：`/root/behavior_implementation`；其独立验证者：`/root/behavior_implementation/independent_order_verification`，同样使用 `fork_turns=none`，已实际创建并等待完成。
 - 反例独立验证者：`/root/behavior_review`，使用新上下文，未读取正常实现或维护者的预期答案。

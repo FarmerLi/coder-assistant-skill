@@ -22,9 +22,9 @@ flowchart LR
 
 | 角色 | 使用时机 | 主要结果 |
 |---|---|---|
-| [勘察](references/agents/勘察.md) | 代码陌生、调用链复杂或影响范围不清 | 带位置的架构、复用和测试入口发现 |
-| [独立验证](references/agents/独立验证.md) | 实质行为变更或复杂改动需要新视角 | 基于原始要求和当前差异的缺陷判断与验收 |
-| [实现（可选）](references/agents/实现.md) | 同一任务中存在接口清楚、修改范围可分开的独立行为切片 | 完成所分配切片的测试、实现和回归 |
+| [勘察](references/agents/investigation.md) | 代码陌生、调用链复杂或影响范围不清 | 带位置的架构、复用和测试入口发现 |
+| [独立验证](references/agents/independent-verification.md) | 实质行为变更或复杂改动需要新视角 | 基于原始要求和当前差异的缺陷判断与验收 |
+| [实现（可选）](references/agents/implementation.md) | 同一任务中存在接口清楚、修改范围可分开的独立行为切片 | 完成所分配切片的测试、实现和回归 |
 
 委派使用宿主已有能力；工具不支持时由主 agent 完成，并如实标明独立性限制。
 
@@ -75,11 +75,11 @@ $coder-assistant 按这个任务和现有架构实现功能，先写测试，优
 
 ## 持续开发
 
-任务工作区、输入基线及已有修改按[工作区与输入](references/shared/工作区与输入.md)核实；追问、调整和中断恢复复用原任务工作区。
+任务工作区、输入基线及已有修改按[工作区与输入](references/shared/workspace-and-baseline.md)核实；追问、调整和中断恢复复用原任务工作区。
 
-任务开始时先选择项目认可的交付路径，见[提交、整合与收尾](references/workflows/回合并.md)。有 PR 政策时遵守远端门槛；没有其他约定时采用本地提交、rebase、验证和目标快进更新。
+任务开始时先选择项目认可的交付路径，见[提交、整合与收尾](references/workflows/delivery-and-closeout.md)。有 PR 政策时遵守远端门槛；没有其他约定时采用本地提交、rebase、验证和目标快进更新。
 
-持续开发优先复用项目已有的任务、文档和交接位置。与 `project-design` 共用项目根目录的英文隐藏文件 `.project-context.json`，仅保存项目、文档、任务、原型源及设计／开发交接入口，按 [JSON 模板](assets/项目上下文模板.json) 补本次必需项；字段与双向交接见 [项目上下文](references/shared/project-context.md)。需要保存时，可使用[开发交接模板](assets/开发交接模板.md)，只记录当前目标、改动、最后实际测试、架构和复用决定、阻塞及下一步。业务材料写入目标项目，不写入技能包。
+持续开发优先复用项目已有的任务、文档和交接位置。与 `project-design` 共用项目根目录的英文隐藏文件 `.project-context.json`，仅保存项目、文档、任务、原型源及设计／开发交接入口，按 [JSON 模板](assets/project-context-template.json) 补本次必需项；字段与双向交接见 [项目上下文](references/shared/project-context.md)。需要保存时，可使用[开发交接模板](assets/development-handoff-template.md)，只记录当前目标、改动、最后实际测试、架构和复用决定、阻塞及下一步。业务材料写入目标项目，不写入技能包。
 
 ## 安装与更新
 
@@ -88,10 +88,10 @@ $coder-assistant 按这个任务和现有架构实现功能，先写测试，优
 在目标项目中把下面的提示词交给 Agent：
 
 ```text
-请读取 https://github.com/FarmerLi/coder-assistant-skill 仓库中的《安装与更新.md》，将 coder-assistant 安装到当前项目；已有安装则更新到最新可用版本。优先使用最新正式 Release；若仓库尚无正式 Release，则使用默认分支 main 的最新提交，并明确标为开发版。请完成版本检查、完整包下载、必要的备份替换和安装校验，并报告版本、提交与安装位置。
+请读取 https://github.com/FarmerLi/coder-assistant-skill 仓库中的《installation.md》，将 coder-assistant 安装到当前项目；已有安装则更新到最新可用版本。优先使用最新正式 Release；若仓库尚无正式 Release，则使用默认分支 main 的最新提交，并明确标为开发版。请完成版本检查、完整包下载、必要的备份替换和安装校验，并报告版本、提交与安装位置。
 ```
 
-默认安装到目标项目 `.agents/skills/coder-assistant/`，不修改项目 `AGENTS.md`。个人全局、固定 Tag、指定分支或严格完整性检查按实际请求选择。完整流程见[安装与更新](安装与更新.md)。
+默认安装到目标项目 `.agents/skills/coder-assistant/`，不修改项目 `AGENTS.md`。个人全局、固定 Tag、指定分支或严格完整性检查按实际请求选择。完整流程见[安装与更新](installation.md)。
 
 ## 技能包结构
 
@@ -123,4 +123,10 @@ python3 -m unittest discover -s tests -p 'test_review_checks.py' -v
 python3 -m unittest discover -s tests/fixtures/order_project/tests -v
 ```
 
-可运行检查与模型行为验证分别记录。脚本检查通过只证明其支持的引用或确定性行为，不代表宿主已发现技能、自动选择正确，也不代表独立审查或真实项目验收已完成。场景与证据边界见[行为验证](tests/行为验证.md)。
+可运行检查与模型行为验证分别记录。脚本检查通过只证明其支持的引用或确定性行为，不代表宿主已发现技能、自动选择正确，也不代表独立审查或真实项目验收已完成。场景与证据边界见[行为验证](tests/behavior-validation.md)。
+
+## 技能文档命名
+
+技能包的当前文档、模板及验证说明使用英文 kebab-case 文件名，标题和正文使用中文；保留 `SKILL.md`、`README.md` 等固定入口与工具约定文件名。文件名反映实际责任，例如交付与收尾包含PR、本地整合和Issue关闭，不再只称回合并；自动检查方法与可选执行器分开维护。改名同步当前引用、安装指南及模板，不保留重复完整正文。
+
+此规则仅适用于技能包，不改变项目说明文件沿项目约定命名的规则。历史验证说明只更新现行导航，日期、基线及结果保留；`tests/验证证据/`是冻结的原始日志、补丁、演练代码、哈希快照与压缩包，保留原历史标识和字节，不用新路径改写旧执行记录。链接测试中的中文样例仍验证Unicode路径支持，不属于当前文档命名。
